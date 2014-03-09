@@ -1,0 +1,74 @@
+import java.awt.image.BufferedImage;
+
+
+public class SeamCarving {
+	
+	int width;  // m
+	int height; // n
+	BufferedImage img;
+	// int[] rgb;
+	
+	public SeamCarving(BufferedImage img)
+	{
+		this.img = img;
+		width = img.getWidth();
+		height = img.getHeight();
+		// rgb = img.getRGB(0, 0, width, height, null, 0, width); 
+	}
+	
+	/*
+	 * i - row
+	 * j - column
+	 */
+	private int convertIndex(int i, int j)
+	{
+		return i*width + j;
+	}
+	
+	private int[] calcMapGradient()
+	{
+		int[] map = new int[width*height];
+		for (int i = 0; i < height; i++)
+		{
+			for (int j = 0; j < width; j++)
+			{
+				map[convertIndex(i,j)] = calcSinglePixelGradient(i,j);
+			}
+		}
+		return map;
+	}
+
+	// int or float ?? 
+	private int calcSinglePixelGradient(int row_i, int col_j) {
+		int numOfNeighbours = 8;
+		int energy = 0;
+		// this is only for a pixel with 8 neighbours
+		// need to update the  
+		for (int i = row_i-1; i < row_i+1; i++)
+		{
+			for (int j = col_j-1; j < col_j+1; j++)
+			{
+				energy+=diff(row_i, col_j, i, j);
+			}
+		}
+		return energy / numOfNeighbours;
+	}
+
+	/*
+	 * val = abs(Ri-R1)+abs(Gi-G1)+abs(Bi-B1) / 3
+	 * */
+	private int diff(int row_i, int col_j, int i, int j) {
+		int pixel = img.getRGB(i, j);
+	    int red_i   = (pixel >> 16) & 0xff;
+	    int green_i = (pixel >> 8) & 0xff;
+	    int blue_i  = (pixel) & 0xff;
+		int neighbourPixel = img.getRGB(row_i, col_j);
+	    int neighbourRed = (neighbourPixel >> 16) & 0xff;
+	    int neighbourGreen = (neighbourPixel >> 8) & 0xff;
+	    int neighbourBlue  = (neighbourPixel) & 0xff;
+	    
+		return Math.abs(red_i-neighbourRed) + Math.abs(green_i-neighbourGreen) + Math.abs(blue_i-neighbourBlue);
+	}
+	
+
+}
