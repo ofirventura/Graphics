@@ -10,8 +10,8 @@ public class SeamCarving {
 	public SeamCarving(BufferedImage img)
 	{
 		this.img = img;
-		width = img.getWidth();
-		height = img.getHeight();
+		width = img.getHeight();
+		height = img.getWidth();
 		// rgb = img.getRGB(0, 0, width, height, null, 0, width); 
 	}
 	
@@ -76,7 +76,7 @@ public class SeamCarving {
 	 * val = abs(Ri-R1)+abs(Gi-G1)+abs(Bi-B1) / 3
 	 * */
 	private int diffRGB(int row_i, int col_j, int i, int j) {
-		System.out.println(" " +  i + " " + j);
+		//System.out.println(" " +  i + " " + j);
 		int pixel = img.getRGB(i, j);
 	    int red_i   = (pixel >> 16) & 0xff;
 	    int green_i = (pixel >> 8) & 0xff;
@@ -89,7 +89,7 @@ public class SeamCarving {
 		return (Math.abs(red_i-neighbourRed) + Math.abs(green_i-neighbourGreen) + Math.abs(blue_i-neighbourBlue)) / 3;
 	}
 	
-	private int[][] calcMapEntropy()
+	public int[][] calcMapEntropy()
 	{
 		int[][] map = new int[height][width];
 		int[][] energyMap = calcMapGradient();
@@ -98,36 +98,53 @@ public class SeamCarving {
 		{
 			for (int j = 0; j < width; j++)
 			{
-				map[i][j] = (calcSinglePixelEntropy(i,j) + energyMap[i][j]) / 2;
+				map[i][j] = (int)(( (double)energyMap[i][j] - calcSinglePixelEntropy(i,j)) / 2.0);
 			}
 		}
 		
 		return map;
 	}
 
-	private int calcSinglePixelEntropy(int row_i, int col_j) {
+	private double calcSinglePixelEntropy(int row_i, int col_j) {
 		
-		int entropy = 0;
+		double entropy = 0;
 		
-		int row_lower = row_i-2;
-		int row_upper = row_i+2;
-		int column_lower = col_j-2;
-		int column_upper = col_j+2;
+		int row_lower = row_i-4;
+		int row_upper = row_i+4;
+		int column_lower = col_j-4;
+		int column_upper = col_j+4;
+		int neighbour_grey = 0;
 		
-		if (row_i == 0)
+		if (row_i <= 3)
 			row_lower = 0;
-		if (row_i == height-1)
+		if (row_i >= height-4)
 			row_upper = height-1;
-		if (col_j == 0)
+		if (col_j <= 3)
 			column_lower = 0;
-		if (col_j == width-1)
+		if (col_j >= width-4)
 			column_upper = width-1;
+	
+		//System.out.println(row_i + " " + col_j);
+		//System.out.println("row upper" + row_upper);
+		//System.out.println("row lower" + row_lower);
+		//System.out.println("col upper" + column_upper);
+		//System.out.println("col lower" + column_lower);
 		
 		for (int i = row_lower; i <= row_upper; i++)
 		{
 			for (int j = column_lower; j <= column_upper; j++)
 			{
-				entropy -= p_mn(i,j) * Math.log(p_mn(i,j));
+				neighbour_grey += calcGreyPixel(i,j);
+			}
+		}
+		
+		for (int i = row_lower; i <= row_upper; i++)
+		{
+			for (int j = column_lower; j <= column_upper; j++)
+			{
+				double p = p_mn(i,j,neighbour_grey);
+				if (p != 0)
+					entropy += p * Math.log(p);
 			}
 		}
 		return entropy;
@@ -135,6 +152,7 @@ public class SeamCarving {
 
 	private int calcGreyPixel(int i, int j) {
 		
+		//System.out.println(i + " " + j);
 		int pixel = img.getRGB(i, j);
 	    int red = (pixel >> 16) & 0xff;
 	    int green = (pixel >> 8) & 0xff;
@@ -143,13 +161,12 @@ public class SeamCarving {
 	    return (red + green + blue) / 3;
 	}
 
-	private int p_mn(int i, int j) {
-		
-		int img_grey = calcGreyNeighbour(i,j);
-		
-		return calcGreyPixel(i, j) / img_grey;
+	private double p_mn(int i, int j, int neighbour_grey) {
+				
+		return ((double)calcGreyPixel(i, j)) / ((double)neighbour_grey);
 	}
 
+	/*
 	private int calcGreyNeighbour(int row_i, int col_j) {
 		int grey_neighbour = 0;
 		
@@ -175,6 +192,6 @@ public class SeamCarving {
 			}
 		}
 		return grey_neighbour;
-	}
+	}*/
 
 }
