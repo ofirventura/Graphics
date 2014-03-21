@@ -31,17 +31,17 @@ public class Main {
 		SeamCarving s2 = new SeamCarving(img2,newWidth, newHeight);
 		//double[][] b = s2.calcMapGradient();
 		s2.Seam();
-		/*int k = b.length;
-		int l = b[b.length-1].length;
-		for (int i = 0; i < k; i++) {
+		//int k = b.length;
+		//int l = b[b.length-1].length;
+		/*for (int i = 0; i < k; i++) {
 			for (int j = 0; j < l; j++) {
 				//System.out.print(a[i][j] + " ");
 				img2.setRGB(i, j, ((int)b[i][j]) | ((int)b[i][j] << 8) | ((int)b[i][j] << 16));
 			}
 			//System.out.println("\n");
-		}
-		File outputfile2 = new File("image_gradiant.jpg");
-		ImageIO.write(img2, "jpg", outputfile2);*/
+		}*/
+		//File outputfile2 = new File("image_output.jpg");
+		//ImageIO.write(img2, "jpg", outputfile2);
 	}
 	
 }

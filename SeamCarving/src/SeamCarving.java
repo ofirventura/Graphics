@@ -1,4 +1,8 @@
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 public class SeamCarving {
 
@@ -7,40 +11,47 @@ public class SeamCarving {
 	int newWidth;
 	int newHeight;
 	BufferedImage img;
+	BufferedImage newImg;
 	double[][] gradientMap;
 	boolean[][] removedPixels;
+	
 
 	public SeamCarving(BufferedImage img, int newWidth, int newHeight) {
 		this.img = img;
-		width = img.getHeight();
-		height = img.getWidth();
+		width = img.getWidth();
+		height = img.getHeight();
 		removedPixels = new boolean[height][width];
 		this.newHeight = newHeight;
 		this.newWidth = newWidth;
+		
 		// what to do if all pixels are used - newHeight or newWidth > 200% of
 		// the image ???
 
 		// rgb = img.getRGB(0, 0, width, height, null, 0, width);
 	}
 
-	public void Seam() {
+	public void Seam() throws IOException {
 
 		int SeamsToHandle = Math.abs(newWidth - width); // +1 ???
 		for (int i = 0; i < SeamsToHandle; i++) {
 			oneSeam();
 		}
+		File outputfile2 = new File("image_output.jpg");
+		ImageIO.write(newImg, "jpg", outputfile2);
 		// TODO: save image and update image 
 
 	}
 
 	private void oneSeam() {
+		width--;
 		int colToDelete;
+		gradientMap = calcMapGradient();
 		double[][] dynamicMap = calcDynamicMap();
 		boolean [][] newRemovedPixels = new boolean[height][width];
         double[][] newGradient = new double[height][width];
+        newImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         int[] minCols = getMinColsForSeam(dynamicMap);
-		gradientMap = calcMapGradient();
-        width--;
+		
         for (int i = 0; i < height; i++)
         {
             colToDelete = minCols[i];
@@ -48,15 +59,21 @@ public class SeamCarving {
             {
                 newGradient[i][j] = gradientMap[i][j];
                 newRemovedPixels[i][j] = removedPixels[i][j];
+                newImg.setRGB(j, i, img.getRGB(j, i));
+                //System.out.println(i + " "+ j + " " + height + " " + width);
             }
-            for (int j = colToDelete + 1; j < width + 1; j++)//?
+            for (int j = colToDelete + 1; j < width; j++)//?
             {
-                newGradient[i][j] = gradientMap[i][j+1];//?
-                newRemovedPixels[i][j] = removedPixels[i][j+1];//?
+                newGradient[i][j-1] = gradientMap[i][j];//?
+                newRemovedPixels[i][j-1] = removedPixels[i][j];//?
+                //System.out.println(i + " " + j + " " + height + " " + width + " " + newImg.getHeight() + " " +  newImg.getWidth() + " " + img.getHeight() + " " + img.getWidth());
+                newImg.setRGB(j-1 , i, img.getRGB(j, i));
+                
             }
 		}
 		gradientMap = newGradient;
 		removedPixels = newRemovedPixels;
+		img = newImg;
 		
 	}
 
@@ -115,11 +132,11 @@ public class SeamCarving {
 	 */
 	private int diffRGB(int row_i, int col_j, int i, int j) {
 		// System.out.println(" " + i + " " + j);
-		int pixel = img.getRGB(i, j);
+		int pixel = img.getRGB(j, i);
 		int red_i = (pixel >> 16) & 0xff;
 		int green_i = (pixel >> 8) & 0xff;
 		int blue_i = (pixel) & 0xff;
-		int neighbourPixel = img.getRGB(row_i, col_j);
+		int neighbourPixel = img.getRGB(col_j,row_i);
 		int neighbourRed = (neighbourPixel >> 16) & 0xff;
 		int neighbourGreen = (neighbourPixel >> 8) & 0xff;
 		int neighbourBlue = (neighbourPixel) & 0xff;
