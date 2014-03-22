@@ -13,6 +13,7 @@ public class SeamCarving {
 	BufferedImage img;
 	double[][] gradientMap;
 	boolean[][] dontTouchThosePixels;
+	boolean isTransposed;
 
 	public SeamCarving(BufferedImage img, int newWidth, int newHeight) {
 		this.img = img;
