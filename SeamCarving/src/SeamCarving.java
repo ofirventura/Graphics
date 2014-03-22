@@ -11,81 +11,126 @@ public class SeamCarving {
 	int newWidth;
 	int newHeight;
 	BufferedImage img;
-	BufferedImage newImg;
 	double[][] gradientMap;
-	boolean[][] removedPixels;
-	
+	boolean[][] dontTouchThosePixels;
+	boolean isTransposed;
 
 	public SeamCarving(BufferedImage img, int newWidth, int newHeight) {
 		this.img = img;
 		width = img.getWidth();
 		height = img.getHeight();
-		removedPixels = new boolean[height][width];
+		dontTouchThosePixels = new boolean[height][width];
 		this.newHeight = newHeight;
 		this.newWidth = newWidth;
-		
-		// what to do if all pixels are used - newHeight or newWidth > 200% of
-		// the image ???
 
-		// rgb = img.getRGB(0, 0, width, height, null, 0, width);
+		// what to do if all pixels are used - newHeight or newWidth > 200% of
 	}
+	
+    private void transpose() {
+    	BufferedImage temp = new BufferedImage(height, width, BufferedImage.TYPE_INT_RGB );
+    	double[][] gradientTransposed = new double[width][height];
+    	int temp_length;
+    	
+        for (int i = 0; i < height; i++)
+        {
+        	for (int j = 0; j < width; j++) 
+        	{
+        		temp.setRGB(i, j, img.getRGB(j, i));
+        		gradientTransposed[j][i] = gradientMap[i][j];     		
+        	}  
+        }
+        
+        img = temp;
+        gradientMap = gradientTransposed;
+        
+        temp_length = newWidth;
+        newWidth = newHeight;
+        newHeight = temp_length;
+        
+        temp_length = width;
+        width = height;
+        height = temp_length;
+    }
 
 	public void Seam() throws IOException {
 
 		int SeamsToHandle = Math.abs(newWidth - width); // +1 ???
-		for (int i = 0; i < SeamsToHandle; i++) {
+		for (int i = 0; i < SeamsToHandle; i++)
+		{
 			oneSeam();
 		}
-		File outputfile2 = new File("image_output.jpg");
-		ImageIO.write(newImg, "jpg", outputfile2);
-		// TODO: save image and update image 
+		
+		transpose();
+		dontTouchThosePixels = new boolean[height][width];
+		SeamsToHandle = Math.abs(newWidth - width); // +1 ???
+		
+		for (int i = 0; i < SeamsToHandle; i++) 
+		{
+			oneSeam();
+		}
+		
+		transpose();
+		File outputfile2 = new File("image_output2.jpg");
+		ImageIO.write(img, "jpg", outputfile2);
 
 	}
 
 	private void oneSeam() {
-		width--;
-		int colToDelete;
+		boolean biggerImage = width < newWidth;
+		int diff = (biggerImage) ? 1 : -1;
+		int colToDeal;
 		gradientMap = calcMapGradient();
 		double[][] dynamicMap = calcDynamicMap();
-		boolean [][] newRemovedPixels = new boolean[height][width];
-        double[][] newGradient = new double[height][width];
-        newImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		int newWidth = width + diff;
+		boolean [][] newDontTouchThosePixels = new boolean[height][newWidth];
+        double[][] newGradient = new double[height][newWidth];
+        BufferedImage newImg = new BufferedImage(newWidth, height, BufferedImage.TYPE_INT_RGB);
         int[] minCols = getMinColsForSeam(dynamicMap);
 		
         for (int i = 0; i < height; i++)
         {
-            colToDelete = minCols[i];
-            for (int j = 0; j < colToDelete; j++) 
+            colToDeal = minCols[i];
+            
+            // What happens before the column:
+            for (int j = 0; j < colToDeal; j++) 
             {
                 newGradient[i][j] = gradientMap[i][j];
-                newRemovedPixels[i][j] = removedPixels[i][j];
+                newDontTouchThosePixels[i][j] = dontTouchThosePixels[i][j];
                 newImg.setRGB(j, i, img.getRGB(j, i));
-                //System.out.println(i + " "+ j + " " + height + " " + width);
             }
-            for (int j = colToDelete + 1; j < width; j++)//?
+            
+            // What happens in the column in case of enlarging: duplicate seam and update matrices
+            if (biggerImage) {
+                newImg.setRGB( colToDeal, i, img.getRGB(colToDeal,i));
+                newImg.setRGB( colToDeal+diff, i, img.getRGB(colToDeal, i)); 
+                newGradient[i][colToDeal] = gradientMap[i][colToDeal];
+                newGradient[i][colToDeal+diff] = gradientMap[i][colToDeal];
+                newDontTouchThosePixels[i][colToDeal] = true;
+                newDontTouchThosePixels[i][colToDeal+diff] = true;
+            }
+            
+            // What happens after the column:
+            for (int j = colToDeal + 1; j < width; j++)//?
             {
-                newGradient[i][j-1] = gradientMap[i][j];//?
-                newRemovedPixels[i][j-1] = removedPixels[i][j];//?
-                //System.out.println(i + " " + j + " " + height + " " + width + " " + newImg.getHeight() + " " +  newImg.getWidth() + " " + img.getHeight() + " " + img.getWidth());
-                newImg.setRGB(j-1 , i, img.getRGB(j, i));
-                
+            	newGradient[i][j+diff] = gradientMap[i][j];
+                newDontTouchThosePixels[i][j+diff] = dontTouchThosePixels[i][j];
+                newImg.setRGB(j+diff , i, img.getRGB(j, i));
             }
 		}
 		gradientMap = newGradient;
-		removedPixels = newRemovedPixels;
+		dontTouchThosePixels = newDontTouchThosePixels;
 		img = newImg;
-		
+		width += diff;
 	}
 
 	/*
 	 * i - row j - column
+	 * 
+	 * private int convertIndex(int i, int j) { return i * width + j; }
 	 */
-	private int convertIndex(int i, int j) {
-		return i * width + j;
-	}
 
 	public double[][] calcMapGradient() {
-		double[][] map = new double[height][width]; //?? new or update only
+		double[][] map = new double[height][width]; // ?? new or update only
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				map[i][j] = calcSinglePixelGradient(i, j);
@@ -95,12 +140,8 @@ public class SeamCarving {
 	}
 
 	private double calcSinglePixelGradient(int row_i, int col_j) {
-		int numOfNeighbours = 0; // TODO: update initialize to 0
+		int numOfNeighbours = 0;
 		double energy = 0;
-		// this is only for a pixel with 8 neighbours
-		// need to update the conditions of lower bound and upper bound
-		// int upperBound = ... ; int lowerBound = ...;
-
 		int row_lower = row_i - 1;
 		int row_upper = row_i + 1;
 		int column_lower = col_j - 1;
@@ -131,12 +172,11 @@ public class SeamCarving {
 	 * val = abs(Ri-R1)+abs(Gi-G1)+abs(Bi-B1) / 3
 	 */
 	private int diffRGB(int row_i, int col_j, int i, int j) {
-		// System.out.println(" " + i + " " + j);
 		int pixel = img.getRGB(j, i);
 		int red_i = (pixel >> 16) & 0xff;
 		int green_i = (pixel >> 8) & 0xff;
 		int blue_i = (pixel) & 0xff;
-		int neighbourPixel = img.getRGB(col_j,row_i);
+		int neighbourPixel = img.getRGB(col_j, row_i);
 		int neighbourRed = (neighbourPixel >> 16) & 0xff;
 		int neighbourGreen = (neighbourPixel >> 8) & 0xff;
 		int neighbourBlue = (neighbourPixel) & 0xff;
@@ -244,8 +284,6 @@ public class SeamCarving {
 		double minAdd;
 		for (int i = 1; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				// M(i; j) = e(i; j)+
-				// min(M(i-1; j-1);M(i-1; j);M(i-1; j+1))
 				currColIndex = j >= 1 ? j - 1 : j;
 				minAdd = gradientMap[i - 1][currColIndex];
 				if (gradientMap[i - 1][j] < minAdd) {
@@ -268,12 +306,12 @@ public class SeamCarving {
 		minCols[height - 1] = minColOfLastRow(map); // initialize last row
 		for (int i = height - 2; i >= 0; i--) {
 			middle = minCols[i + 1];
-			int currCol = (!removedPixels[i][middle]) ? middle : -1;
+			int currCol = (!dontTouchThosePixels[i][middle]) ? middle : -1;
 			currVal = map[i][middle];
 
 			// leftmost free pixel
 			left = middle - 1;
-			while (left >= 0 && removedPixels[i][left]) {
+			while (left >= 0 && dontTouchThosePixels[i][left]) {
 				left--;
 			}
 
@@ -287,7 +325,7 @@ public class SeamCarving {
 
 			// rightmost free pixel
 			right = middle + 1;
-			while (right < width && removedPixels[i][right]) {
+			while (right < width && dontTouchThosePixels[i][right]) {
 				right++;
 			}
 			if (right < width) {
@@ -297,24 +335,31 @@ public class SeamCarving {
 			}
 
 			minCols[i] = currCol;
-			removedPixels[i][currCol] = true;
+			dontTouchThosePixels[i][currCol] = true;
 		}
 
 		return minCols;
 
 	}
 
+	/*
+	 * Initialization on the last row before calculating the whole seam
+	 * */
 	private int minColOfLastRow(double[][] map) {
 		double curr;
 		double min = map[height - 1][0];
 		int minColOfLastRow = 0;
 		for (int j = 0; j < width; j++) {
+			if (dontTouchThosePixels[height - 1][j])
+				continue;
 			curr = map[height - 1][j];
 			if (curr < min) {
 				min = curr;
 				minColOfLastRow = j;
 			}
 		}
+		
+		dontTouchThosePixels[height - 1][minColOfLastRow] = true;
 		return minColOfLastRow;
 	}
 

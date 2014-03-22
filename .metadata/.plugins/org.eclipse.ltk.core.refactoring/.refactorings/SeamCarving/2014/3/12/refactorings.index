@@ -13,3 +13,6 @@
 1394995550931	Rename local variable 'cutPlace'
 1394995617699	Rename local variable 'newAlreadyUsed'
 1394995675335	Rename local variable 'newEnergy'
+1395511744937	Rename field 'removedPixels'
+1395511768502	Rename local variable 'newRemovedPixels'
+1395512373056	Rename local variable 'colToDelete'
