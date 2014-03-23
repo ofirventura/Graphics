@@ -24,9 +24,9 @@ public class SeamCarving {
 		return i*width + j;
 	}
 	
-	public int[][] calcMapGradient()
+	public double[][] calcMapGradient()
 	{
-		int[][] map = new int[height][width];
+		double[][] map = new double[height][width];
 		for (int i = 0; i < height; i++)
 		{
 			for (int j = 0; j < width; j++)
@@ -37,9 +37,9 @@ public class SeamCarving {
 		return map;
 	}
 
-	private int calcSinglePixelGradient(int row_i, int col_j) {
+	private double calcSinglePixelGradient(int row_i, int col_j) {
 		int numOfNeighbours = 0; // TODO: update initialize to 0
-		int energy = 0;
+		double energy = 0;
 		// this is only for a pixel with 8 neighbours
 		// need to update the conditions of lower bound and upper bound
 		// int upperBound = ... ; int lowerBound = ...;
@@ -75,7 +75,7 @@ public class SeamCarving {
 	/*
 	 * val = abs(Ri-R1)+abs(Gi-G1)+abs(Bi-B1) / 3
 	 * */
-	private int diffRGB(int row_i, int col_j, int i, int j) {
+	private double diffRGB(int row_i, int col_j, int i, int j) {
 		//System.out.println(" " +  i + " " + j);
 		int pixel = img.getRGB(i, j);
 	    int red_i   = (pixel >> 16) & 0xff;
@@ -89,16 +89,16 @@ public class SeamCarving {
 		return (Math.abs(red_i-neighbourRed) + Math.abs(green_i-neighbourGreen) + Math.abs(blue_i-neighbourBlue)) / 3;
 	}
 	
-	public int[][] calcMapEntropy()
+	public double[][] calcMapEntropy()
 	{
-		int[][] map = new int[height][width];
-		int[][] energyMap = calcMapGradient();
+		double[][] map = new double[height][width];
+		double[][] energyMap = calcMapGradient();
 		
 		for (int i = 0; i < height; i++)
 		{
 			for (int j = 0; j < width; j++)
 			{
-				map[i][j] = (int)(( (double)energyMap[i][j] - calcSinglePixelEntropy(i,j)) / 2.0);
+				map[i][j] = (( (double)energyMap[i][j] - calcSinglePixelEntropy(i,j)) / 2.0);
 			}
 		}
 		
