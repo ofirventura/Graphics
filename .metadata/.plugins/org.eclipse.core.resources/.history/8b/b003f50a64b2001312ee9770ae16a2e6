@@ -16,10 +16,9 @@ public class Main {
 		int energy =  0;//Integer.parseInt(args[3]);
 		//String outputPath = args[4];
 		BufferedImage img = ImageIO.read(new File(input));
-		SeamCarving s = new SeamCarving(img, newWidth, newHeight, 2);
-		s.Seam();
-		//double[][] a = s.calcMapEntropy();
-/*
+		SeamCarving s = new SeamCarving(img, newWidth, newHeight, 1);
+		double[][] a = s.calcMapEntropy();
+
 		int n = a.length;
 		int m = a[a.length-1].length;
 		for (int i = 0; i < n; i++) {
@@ -30,8 +29,8 @@ public class Main {
 
 		File outputfile = new File("image_entropy.bmp");
 		ImageIO.write(img, "BMP", outputfile);
-		*/
-		//BufferedImage img2 = ImageIO.read(new File(input));
+		
+		BufferedImage img2 = ImageIO.read(new File(input));
 		//SeamCarving s2 = new SeamCarving(img2);
 		/*double[][] b = s2.calcMapGradient();
 		int k = a.length;

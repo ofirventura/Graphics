@@ -42,10 +42,6 @@ public class SeamCarving {
 	private enum EnergyType {
 		GRADIENT, ENTROPY, FORWARD
 	}
-	
-	private enum Direction {
-		UP, LEFT, RIGHT
-	}
 
 	private void transpose() {
 		BufferedImage temp = new BufferedImage(height, width,
@@ -102,22 +98,21 @@ public class SeamCarving {
 		boolean biggerImage = width < newWidth;
 		int diff = (biggerImage) ? 1 : -1;
 		int colToDeal;
-		double[][] dynamicMap = new double[0][0];
+		
 		switch (energy)
 		{
 		case GRADIENT:
 			gradientMap = calcMapGradient();
-			dynamicMap = calcDynamicMap();
-		case FORWARD:
-			gradientMap = calcMapGradient();// TODO: update to forward calculation
-			dynamicMap = calcDynamicMapForward();
 			break;
 		case ENTROPY:
 			gradientMap = calcMapEntropy();
-			dynamicMap = calcDynamicMap();
+			break;
+		case FORWARD: // TODO: update to forward calculation
+			gradientMap = calcMapGradient();
 			break;
 		}
 		
+		double[][] dynamicMap = calcDynamicMap();
 		int newWidth = width + diff;
 		boolean[][] newDontTouchThosePixels = new boolean[height][newWidth];
 		double[][] newGradient = new double[height][newWidth];
@@ -193,8 +188,6 @@ public class SeamCarving {
 	 * 
 	 * private int convertIndex(int i, int j) { return i * width + j; }
 	 */
-
-
 
 	private int convertIndex(int i, int j)
 	{
@@ -325,7 +318,7 @@ public class SeamCarving {
 	}
 
 	private int calcGreyPixel(int i, int j) {
-		int pixel = img.getRGB(j, i);
+		int pixel = img.getRGB(i, j);
 		int red = (pixel >> 16) & 0xff;
 		int green = (pixel >> 8) & 0xff;
 		int blue = (pixel) & 0xff;
@@ -380,56 +373,7 @@ public class SeamCarving {
 		
 		return map;
 	}
-	
-	private double[][] calcDynamicMapForward() {
-		double[][] map = new double[height][width];
-		for (int j = 0; j < width; j++) {
-			map[0][j] = gradientMap[0][j];
-		}
 
-		int currColIndex;
-		double minAdd;
-		for (int i = 1; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				currColIndex = j >= 1 ? j - 1 : j;
-				double cl = calcC(Direction.LEFT, i, j);
-				minAdd = gradientMap[i - 1][currColIndex] + cl;
-				double cu = calcC(Direction.UP, i, j);
-				if (gradientMap[i - 1][j] + cu < minAdd) {
-					currColIndex = j;
-				}
-				double cr = calcC(Direction.RIGHT, i, j);
-				if ((j < width - 1) && (gradientMap[i - 1][j + 1] + cr ) < minAdd) {
-					currColIndex = j + 1;
-				}
-				minAdd = map[i - 1][currColIndex];
-				map[i][j] = gradientMap[i][j] + minAdd;
-			}
-		}
-		
-		return map;
-	}
-
-	private double calcC(Direction direction, int i, int j)
-	{
-		int colLower = j > 0 ? j-1 : j;
-		int colUpper = j <  width - 1 ? j + 1 : j;
-		double result = 0.0;
-		switch (direction)
-		{
-		case LEFT:
-			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i)) + Math.abs(img.getRGB(j, i-1) - img.getRGB(colLower, i));
-			break;
-		case RIGHT:
-			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i)) + Math.abs(img.getRGB(j, i-1) - img.getRGB(colUpper, i));
-			break;
-		case UP:
-			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i));
-			break;
-		}
-		return result;
-	}
-	
 	private int[] getMinColsForSeam(double[][] map) {
 		int minCols[] = new int[height];
 		int right, middle, left;

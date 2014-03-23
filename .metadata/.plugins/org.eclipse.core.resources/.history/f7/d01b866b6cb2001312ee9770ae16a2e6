@@ -413,7 +413,7 @@ public class SeamCarving {
 	private double calcC(Direction direction, int i, int j)
 	{
 		int colLower = j > 0 ? j-1 : j;
-		int colUpper = j <  width - 1 ? j + 1 : j;
+		int colUpper = j <  width - 1 ? j + 1 : j;;
 		double result = 0.0;
 		switch (direction)
 		{

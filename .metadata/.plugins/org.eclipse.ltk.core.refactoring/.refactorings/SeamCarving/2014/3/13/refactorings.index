@@ -1,2 +1,4 @@
 1395559485717	Rename local variable 'r'
 1395559515319	Rename local variable 'c'
+1395565646817	Rename local variable 'currColIndexLower'
+1395565666874	Rename local variable 'currColIndexUpper'

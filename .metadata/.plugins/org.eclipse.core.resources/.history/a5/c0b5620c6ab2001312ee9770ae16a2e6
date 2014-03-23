@@ -102,7 +102,7 @@ public class SeamCarving {
 		boolean biggerImage = width < newWidth;
 		int diff = (biggerImage) ? 1 : -1;
 		int colToDeal;
-		double[][] dynamicMap = new double[0][0];
+		double[][] dynamicMap;
 		switch (energy)
 		{
 		case GRADIENT:
@@ -412,22 +412,17 @@ public class SeamCarving {
 
 	private double calcC(Direction direction, int i, int j)
 	{
-		int colLower = j > 0 ? j-1 : j;
-		int colUpper = j <  width - 1 ? j + 1 : j;
-		double result = 0.0;
 		switch (direction)
 		{
 		case LEFT:
-			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i)) + Math.abs(img.getRGB(j, i-1) - img.getRGB(colLower, i));
 			break;
 		case RIGHT:
-			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i)) + Math.abs(img.getRGB(j, i-1) - img.getRGB(colUpper, i));
 			break;
 		case UP:
-			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i));
 			break;
+		
 		}
-		return result;
+		return 0.0;
 	}
 	
 	private int[] getMinColsForSeam(double[][] map) {
