@@ -9,9 +9,17 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		String input = args[0];
+		int newHeight = Integer.parseInt(args[1]);
+		int newWidth =  Integer.parseInt(args[2]);
 		BufferedImage img = ImageIO.read(new File(input));
-		SeamCarving s = new SeamCarving(img);
-		double[][] a = s.calcMapEntropy();
+
+		//SeamCarving s = new SeamCarving(img);
+		//double[][] a = s.calcMapEntropy();
+
+		
+		//double[][] a = s.calcMapEntropy();
+		/*
+>>>>>>> 50e53915f6f9f918e7f1e7498988a7969c280101
 		int n = a.length;
 		int m = a[a.length-1].length;
 		for (int i = 0; i < n; i++) {
@@ -21,6 +29,7 @@ public class Main {
 			}
 			//System.out.println("\n");
 		}
+<<<<<<< HEAD
 		File outputfile = new File("image_entropy.bmp");
 		ImageIO.write(img, "BMP", outputfile);
 		
@@ -30,14 +39,32 @@ public class Main {
 		int k = a.length;
 		int l = a[a.length-1].length;
 		for (int i = 0; i < k; i++) {
+=======
+		File outputfile = new File("image_entropy.jpg");
+		ImageIO.write(img, "jpg", outputfile);
+		*/
+		BufferedImage img2 = ImageIO.read(new File(input));
+		SeamCarving s2 = new SeamCarving(img2,newWidth, newHeight);
+		//double[][] b = s2.calcMapGradient();
+		s2.Seam();
+		//int k = b.length;
+		//int l = b[b.length-1].length;
+		/*for (int i = 0; i < k; i++) {
+>>>>>>> 50e53915f6f9f918e7f1e7498988a7969c280101
 			for (int j = 0; j < l; j++) {
 				//System.out.print(a[i][j] + " ");
 				img2.setRGB(i, j, ((int)b[i][j]) | ((int)b[i][j] << 8) | ((int)b[i][j] << 16));
 			}
 			//System.out.println("\n");
+<<<<<<< HEAD
 		}
 		File outputfile2 = new File("image_gradiant.bmp");
 		ImageIO.write(img2, "BMP", outputfile2);
+=======
+		}*/
+		//File outputfile2 = new File("image_output.jpg");
+		//ImageIO.write(img2, "jpg", outputfile2);
+
 	}
 	
 }

@@ -1,1 +1,4 @@
 1394641381390	Move file
+1394916523249	Rename local variable 'j'
+1394916791394	Rename local variable 'currColIndex'
+1394916804924	Rename local variable 'prevColIndex'
