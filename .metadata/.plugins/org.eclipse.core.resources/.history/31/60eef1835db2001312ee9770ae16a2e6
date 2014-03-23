@@ -13,26 +13,28 @@ public class Main {
 		String input = args[0];
 		int newHeight = Integer.parseInt(args[1]);
 		int newWidth =  Integer.parseInt(args[2]); // TODO : lahafoch
-		int energy =  0;//Integer.parseInt(args[3]);
-		//String outputPath = args[4];
+		int energy =  Integer.parseInt(args[3]);
+		String outputPath = args[4];
 		BufferedImage img = ImageIO.read(new File(input));
-		SeamCarving s = new SeamCarving(img, newWidth, newHeight, 1);
-		double[][] a = s.calcMapEntropy();
-		
+		SeamCarving s = new SeamCarving(img, newWidth, newHeight, energy);
+		//double[][] a = s.calcMapEntropy();
+		/*
 		int n = a.length;
 		int m = a[a.length-1].length;
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < m; j++) {
+				//System.out.print(a[i][j] + " ");
 				img.setRGB(i, j, ((int)a[i][j]) | ((int)a[i][j] << 8) | ((int)a[i][j] << 16));
 			}
+			//System.out.println("\n");
 		}
 		File outputfile = new File("image_entropy.jpg");
 		ImageIO.write(img, "jpg", outputfile);
-		
-		//BufferedImage img2 = ImageIO.read(new File(input));
-		//SeamCarving s2 = new SeamCarving(img2,newWidth, newHeight, energy);
+		*/
+		BufferedImage img2 = ImageIO.read(new File(input));
+		SeamCarving s2 = new SeamCarving(img2,newWidth, newHeight, energy);
 		//double[][] b = s2.calcMapGradient();
-		//s2.Seam();
+		s2.Seam();
 		//int k = b.length;
 		//int l = b[b.length-1].length;
 		/*for (int i = 0; i < k; i++) {

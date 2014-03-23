@@ -74,7 +74,6 @@ public class SeamCarving {
 
 		// Vertical seams
 		int SeamsToHandle = Math.abs(newWidth - width); // +1 ???
-		gradientMap = calcMapGradient();
 		for (int i = 0; i < SeamsToHandle; i++) {
 			oneSeam();
 		}
@@ -102,7 +101,7 @@ public class SeamCarving {
 		switch (energy)
 		{
 		case GRADIENT:
-			gradientMap = calcMapGradient();
+			//gradientMap = calcMapGradient();
 			break;
 		case ENTROPY:
 			gradientMap = calcMapEntropy();
@@ -120,13 +119,11 @@ public class SeamCarving {
 				BufferedImage.TYPE_INT_RGB);
 		int[] minCols = getMinColsForSeam(dynamicMap);
 
-		for (int i = 0; i < height; i++)
-		{
+		for (int i = 0; i < height; i++) {
 			colToDeal = minCols[i];
 
 			// What happens before the column:
-			for (int j = 0; j < colToDeal; j++)
-			{
+			for (int j = 0; j < colToDeal; j++) {
 				newGradient[i][j] = gradientMap[i][j];
 				newDontTouchThosePixels[i][j] = dontTouchThosePixels[i][j];
 				newImg.setRGB(j, i, img.getRGB(j, i));
@@ -134,8 +131,7 @@ public class SeamCarving {
 
 			// What happens in the column in case of enlarging: duplicate seam
 			// and update matrices
-			if (biggerImage)
-			{
+			if (biggerImage) {
 				newImg.setRGB(colToDeal, i, img.getRGB(colToDeal, i));
 				newImg.setRGB(colToDeal + diff, i, img.getRGB(colToDeal, i));
 				newGradient[i][colToDeal] = gradientMap[i][colToDeal];
@@ -156,21 +152,20 @@ public class SeamCarving {
 		dontTouchThosePixels = newDontTouchThosePixels;
 		img = newImg;
 		width += diff;
-		/*
+		
 		int row_lower;
 		int row_upper;
 		int col_lower;
-		int col_upper;*/
-		/*
+		int col_upper;
+		
         if (energy == EnergyType.GRADIENT)
         {
             for (int row = 0; row < height; row++) {
                 int column = minCols[row];
-                
                 //TODO: used a mapped function
-                row_lower = row - 1 > 0 ? row-1 : 0;
-                row_upper = row + 1 > height-1 ? height-1 : row+1;
-                col_lower = column - 1 > 0 ? column-1 : 0;
+                row_lower = row-1 > 0 ? row-1 : 0;
+                row_upper = row+1 > height-1 ? height-1 : row+1;
+                col_lower = column-1 > 0 ? column-1 : 0;
                 col_upper = column + 1 + diff > width-1 ? width-1 : column + 1 + diff;
                 for (int i = row_lower; i <= row_upper; i++)
                 {
@@ -180,7 +175,7 @@ public class SeamCarving {
                     }
                 }
             }
-        }*/
+        }
 	}
 
 	/*

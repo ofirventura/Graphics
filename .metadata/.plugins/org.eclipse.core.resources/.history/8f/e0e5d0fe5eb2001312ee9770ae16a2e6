@@ -120,8 +120,7 @@ public class SeamCarving {
 				BufferedImage.TYPE_INT_RGB);
 		int[] minCols = getMinColsForSeam(dynamicMap);
 
-		for (int i = 0; i < height; i++)
-		{
+		for (int i = 0; i < height; i++) {
 			colToDeal = minCols[i];
 
 			// What happens before the column:
