@@ -189,11 +189,20 @@ public class SeamCarving {
 	 * private int convertIndex(int i, int j) { return i * width + j; }
 	 */
 
-	public double[][] calcMapGradient() {
-		double[][] map = new double[height][width]; // ?? new or update only
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
-				map[i][j] = calcSinglePixelGradient(i, j);
+	private int convertIndex(int i, int j)
+	{
+		return i*width + j;
+	}
+	
+	public double[][] calcMapGradient()
+	{
+		double[][] map = new double[height][width];
+		for (int i = 0; i < height; i++)
+		{
+			for (int j = 0; j < width; j++)
+			{
+				map[i][j] = calcSinglePixelGradient(i,j);
+
 			}
 		}
 		
@@ -201,6 +210,7 @@ public class SeamCarving {
 	}
 
 	private double calcSinglePixelGradient(int row_i, int col_j) {
+
 		int numOfNeighbours = 0;
 		double energy = 0;
 		
@@ -209,6 +219,7 @@ public class SeamCarving {
 		int row_upper = row_i + 1;
 		int column_lower = col_j - 1;
 		int column_upper = col_j + 1;
+
 
 		if (row_i == 0)
 			row_lower = 0;
@@ -233,6 +244,8 @@ public class SeamCarving {
 
 	/*
 	 * val = abs(Ri-R1)+abs(Gi-G1)+abs(Bi-B1) / 3
+
+
 	 */
 	private int diffRGB(int row_i, int col_j, int i, int j) {
 		int pixel = img.getRGB(j, i);
@@ -256,6 +269,7 @@ public class SeamCarving {
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				map[i][j] = ((energyMap[i][j] - calcSinglePixelEntropy(i, j)) / 2.0);
+
 			}
 		}
 
