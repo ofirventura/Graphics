@@ -89,8 +89,6 @@ public class SeamCarving {
 	public void Seam() throws IOException {
         int origWidth = width;
         int origHeight = height;
-        int newWidthLocal = newWidth;
-        int newHeightLocal = newHeight;
 		// Vertical seams
 		int SeamsToHandle = Math.abs(newWidth - width); // +1 ???
 		switch (energy)
@@ -140,14 +138,14 @@ public class SeamCarving {
 			if (!direction) { // vertical
 				count1++;
 				j--;
-				if (count1 == (int)(Math.abs(origWidth - newWidthLocal))*0.7) {
+				if (count1 == (int)(Math.abs(origWidth - newWidth))*0.7) {
 					dontTouchThosePixels = new boolean[height][width];
 					System.out.println("blaaa kaki");
 				}
 			} else { // horizontal
 				count2++;
 				i--;
-				if (count2 == (int)(Math.abs(origHeight - newHeightLocal))*0.7) {
+				if (count2 == (int)(Math.abs(origWidth - newWidth))*0.7) {
 					dontTouchThosePixels = new boolean[height][width];
 					System.out.println("blaaa pipi");
 				}
