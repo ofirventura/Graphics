@@ -13,10 +13,10 @@ public class Main {
 		String input = args[0];
 		int newHeight = Integer.parseInt(args[1]);
 		int newWidth =  Integer.parseInt(args[2]); // TODO : lahafoch
-		int energy =  0;//Integer.parseInt(args[3]);
+		int energy =  0;  //Integer.parseInt(args[3]);
 		//String outputPath = args[4];
 		BufferedImage img = ImageIO.read(new File(input));
-		SeamCarving s = new SeamCarving(img, newWidth, newHeight, 1);
+		SeamCarving s = new SeamCarving(img, newWidth, newHeight,2);
 		s.Seam();
 		//double[][] a = s.calcMapEntropy();
 /*
