@@ -2,3 +2,5 @@
 1395559515319	Rename local variable 'c'
 1395565646817	Rename local variable 'currColIndexLower'
 1395565666874	Rename local variable 'currColIndexUpper'
+1395567755955	Rename local variable 'diff1'
+1395569153950	Rename field 'gradientMap'

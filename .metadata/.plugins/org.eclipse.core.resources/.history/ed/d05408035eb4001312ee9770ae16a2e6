@@ -1,0 +1,618 @@
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+public class SeamCarving {
+
+	int width; // m : number of columns
+	int height; // n : number of rows
+	int newWidth;
+	int newHeight;
+	BufferedImage img;
+	double[][] energyMap;
+	boolean[][] dontTouchThosePixels;
+	EnergyType energy;
+	private boolean[][] transportMap;
+	private boolean[][] dontTouchThosePixelsRotated;
+	private boolean isImageRotated;
+
+	public SeamCarving(BufferedImage img, int newWidth, int newHeight,
+			int energyType) {
+		this.img = img;
+		width = img.getWidth();
+		height = img.getHeight();
+		dontTouchThosePixels = new boolean[height][width];
+		this.newHeight = newHeight;
+		this.newWidth = newWidth;
+		
+		switch (energyType) {
+		case 0:
+			energy = EnergyType.GRADIENT;
+			break;
+		case 1:
+			energy = EnergyType.ENTROPY;
+			break;
+		case 2:
+			energy = EnergyType.FORWARD;
+			break;
+		}
+
+		// TODO: what to do if all pixels are used - newHeight or newWidth > 200% 
+	}
+
+	private enum EnergyType {
+		GRADIENT, ENTROPY, FORWARD
+	}
+	
+	private enum Direction {
+		UP, LEFT, RIGHT
+	}
+
+	private void transpose() {
+		BufferedImage temp = new BufferedImage(height, width,
+				BufferedImage.TYPE_INT_RGB);
+		double[][] gradientTransposed = new double[width][height];
+		boolean[][] usedTemp = new boolean[width][height];
+		boolean[][] usedTemp2 = new boolean[width][height];
+		int temp_length;
+
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				temp.setRGB(i, j, img.getRGB(j, i));
+				gradientTransposed[j][i] = energyMap[i][j];
+				usedTemp[j][i] = dontTouchThosePixels[i][j];
+				usedTemp2[j][i] = dontTouchThosePixelsRotated[i][j];
+			}
+		}
+
+		img = temp;
+		energyMap = gradientTransposed;
+		dontTouchThosePixels = usedTemp;
+		dontTouchThosePixelsRotated = usedTemp2;
+		// Swap newWidth and newHeight
+		temp_length = newWidth;
+		newWidth = newHeight;
+		newHeight = temp_length;
+
+		// Swap width and height
+		temp_length = width;
+		width = height;
+		height = temp_length;
+	}
+
+	public void Seam() throws IOException {
+        int origWidth = width;
+        int origHeight = height;
+		// Vertical seams
+		int SeamsToHandle = Math.abs(newWidth - width); // +1 ???
+		switch (energy)
+		{
+		case GRADIENT:
+			energyMap = calcMapGradient();
+		case FORWARD:
+			energyMap = calcMapGradient();// TODO: update to forward calculation
+			break;
+		case ENTROPY:
+			energyMap = calcMapEntropy();
+			break;
+		}
+		buildTransportMap();
+		
+		
+
+        // seam
+        int r = Math.abs(height - newHeight) + 1;
+        int c = Math.abs(width - newWidth) + 1;
+        int i = r - 1;
+        int j = c - 1;
+        dontTouchThosePixels = new boolean[height][width];
+        dontTouchThosePixelsRotated = new boolean[height][width];
+        while (i > 0 || j > 0) {
+            boolean direction = transportMap[i][j];
+
+            if (isImageRotated != direction)
+                transpose();
+
+            oneSeam();
+            if (!direction) // vertical
+                j--;
+            else // horizontal
+                i--;
+        }
+
+       // return image to original direction
+        if (isImageRotated) {
+            transpose();
+        }
+		/*for (int i = 0; i < SeamsToHandle; i++) {
+			oneSeam();
+		}
+		File outputfile = new File("image_energy.jpg");
+		BufferedImage img2 = new BufferedImage(energyMap[0].length, energyMap.length, BufferedImage.TYPE_INT_RGB);
+		
+		int n = energyMap.length;
+		int m = energyMap[0].length;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < m; j++) {
+				img2.setRGB(j, i, ((int)energyMap[i][j]) | ((int)energyMap[i][j] << 8) | ((int)energyMap[i][j] << 16));
+			}
+		}
+		ImageIO.write(img2, "jpg", outputfile);
+		
+		transpose();*/
+		/*
+		dontTouchThosePixels = new boolean[height][width];
+		SeamsToHandle = Math.abs(newWidth - width); // +1 ???
+
+		// Horizontal seams
+		for (int i = 0; i < SeamsToHandle; i++) {
+			oneSeam();
+		}
+
+		transpose();*/
+		
+		//File outputfile2 = new File("image_energy2.jpg");
+		//BufferedImage img3 = new BufferedImage(energyMap[0].length, energyMap.length, BufferedImage.TYPE_INT_RGB);
+		/*
+		n = energyMap.length;
+		m = energyMap[0].length;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < m; j++) {
+				img3.setRGB(j, i, ((int)energyMap[i][j]) | ((int)energyMap[i][j] << 8) | ((int)energyMap[i][j] << 16));
+			}
+		}
+		ImageIO.write(img3, "jpg", outputfile2);
+		*/
+		
+		File outputfile3 = new File("image_output2.jpg");
+		ImageIO.write(img, "jpg", outputfile3);
+
+	}
+
+	private void oneSeam() {
+		boolean biggerImage = width < newWidth;
+		int diff = (biggerImage) ? 1 : -1;
+		int colToDeal;
+		double[][] dynamicMap = new double[0][0];
+		switch (energy)
+		{
+		case GRADIENT:
+			dynamicMap = calcDynamicMap();
+		case FORWARD:
+			dynamicMap = calcDynamicMapForward();
+			break;
+		case ENTROPY:
+			dynamicMap = calcDynamicMap();
+			break;
+		}
+		
+		int newWidth = width + diff;
+		boolean[][] newDontTouchThosePixels = new boolean[height][newWidth];
+		double[][] newGradient = new double[height][newWidth];
+		BufferedImage newImg = new BufferedImage(newWidth, height,
+				BufferedImage.TYPE_INT_RGB);
+		int[] minCols = getMinColsForSeam(dynamicMap);
+
+		for (int i = 0; i < height; i++)
+		{
+			colToDeal = minCols[i];
+
+			// What happens before the column:
+			for (int j = 0; j < colToDeal; j++)
+			{
+				newGradient[i][j] = energyMap[i][j];
+				newDontTouchThosePixels[i][j] = dontTouchThosePixels[i][j];
+				newImg.setRGB(j, i, img.getRGB(j, i));
+			}
+
+			// What happens in the column in case of enlarging: duplicate seam
+			// and update matrices
+			if (biggerImage)
+			{
+		        int col = getAverageColor(i, colToDeal, Direction.LEFT);
+				newImg.setRGB(colToDeal, i, col);
+				col = getAverageColor(i, colToDeal, Direction.RIGHT);
+				newImg.setRGB(colToDeal + diff, i, col);
+				
+				//int leftIndex = colToDeal- 1 > 0 ? colToDeal - 1 : colToDeal;
+				//int rightIndex = colToDeal + 1 > width - 1 ? width - 1 : colToDeal + 1;
+				newGradient[i][colToDeal] = energyMap[i][colToDeal];
+				newGradient[i][colToDeal + diff] =energyMap[i][colToDeal];
+				newDontTouchThosePixels[i][colToDeal] = true;
+				newDontTouchThosePixels[i][colToDeal + diff] = true;
+			}
+
+			// What happens after the column:
+			for (int j = colToDeal + 1; j < width; j++)// ?
+			{
+				newGradient[i][j + diff] = energyMap[i][j];
+				newDontTouchThosePixels[i][j + diff] = dontTouchThosePixels[i][j];
+				newImg.setRGB(j + diff, i, img.getRGB(j, i));
+			}
+		}
+		energyMap = newGradient;
+		dontTouchThosePixels = newDontTouchThosePixels;
+		img = newImg;
+		width += diff;
+		
+		int row_lower;
+		int row_upper;
+		int col_lower;
+		int col_upper;
+
+
+            for (int row = 0; row < height; row++) {
+                int column = minCols[row];
+                int sizeOfEnv = (energy == EnergyType.ENTROPY) ? 4 : 1;
+                row_lower = row - sizeOfEnv > 0 ? row - 1 : 0;
+                row_upper = row + sizeOfEnv > height-1 ? height-1 : row+1;
+                col_lower = column - sizeOfEnv > 0 ? column - 1 : 0;
+                col_upper = column + sizeOfEnv + diff > width - 1 ? width - 1 : column + 1 + diff;
+                
+                for (int i = row_lower; i <= row_upper; i++)
+                {
+                    for (int j = col_lower; j <= col_upper; j++)
+                    {
+                        switch (energy)
+                        {
+                        	case GRADIENT:
+                        	case FORWARD:
+                        		energyMap[i][j] = calcSinglePixelGradient(i, j);
+                        	break;
+                        	case ENTROPY:
+                        		energyMap[i][j] = calcSinglePixelEntropy(i, j);
+                        		break;
+                        }
+                    }
+                }
+            }
+
+	}
+
+	private int getAverageColor(int i, int j, Direction d) {
+	    int redColors = 0;
+	    int greenColors = 0;
+	    int blueColors = 0;
+		int directionIndex;
+		if(d == Direction.LEFT) {
+			directionIndex = j - 1 > 0 ? j - 1 : j;
+		}
+		else{
+			directionIndex = j + 1 > width - 1 ? width - 1 : j + 1;
+		}
+	    Color c1 = new Color(img.getRGB(j, i));
+	    Color c2 = new Color(img.getRGB(directionIndex, i));
+	    
+	    redColors = c1.getRed() + c2.getRed();
+        greenColors = c1.getGreen() + c2.getGreen();
+        blueColors = c1.getBlue() + c2.getBlue();
+	    int red = (redColors/2);
+	    int green = (greenColors/2);
+	    int blue = (blueColors/2);
+		return blue | (green << 8) | (red << 16);
+	}
+
+	public double[][] calcMapGradient()
+	{
+		double[][] map = new double[height][width];
+		for (int i = 0; i < height; i++)
+		{
+			for (int j = 0; j < width; j++)
+			{
+				map[i][j] = calcSinglePixelGradient(i,j);
+
+			}
+		}
+		
+		return map;
+	}
+
+	private double calcSinglePixelGradient(int row_i, int col_j) {
+
+		int numOfNeighbours = 0;
+		double energy = 0;
+		int row_lower = row_i - 1;
+		int row_upper = row_i + 1;
+		int column_lower = col_j - 1;
+		int column_upper = col_j + 1;
+
+
+		if (row_i == 0)
+			row_lower = 0;
+		if (row_i == height - 1)
+			row_upper = height - 1;
+		if (col_j == 0)
+			column_lower = 0;
+		if (col_j == width - 1)
+			column_upper = width - 1;
+
+		for (int i = row_lower; i <= row_upper; i++) {
+			for (int j = column_lower; j <= column_upper; j++) {
+				if (i == row_i && j == col_j)
+					continue;
+
+				energy += diffRGB(row_i, col_j, i, j);
+				numOfNeighbours++;
+			}
+		}
+		return energy / (double) numOfNeighbours;
+	}
+
+	/*
+	 * val = abs(Ri-R1)+abs(Gi-G1)+abs(Bi-B1) / 3
+	 */
+	private int diffRGB(int row_i, int col_j, int i, int j) {
+		int pixel = img.getRGB(j, i);
+		int red_i = (pixel >> 16) & 0xff;
+		int green_i = (pixel >> 8) & 0xff;
+		int blue_i = (pixel) & 0xff;
+		int neighbourPixel = img.getRGB(col_j, row_i);
+		int neighbourRed = (neighbourPixel >> 16) & 0xff;
+		int neighbourGreen = (neighbourPixel >> 8) & 0xff;
+		int neighbourBlue = (neighbourPixel) & 0xff;
+
+		return (Math.abs(red_i - neighbourRed)
+				+ Math.abs(green_i - neighbourGreen) + Math.abs(blue_i
+				- neighbourBlue)) / 3;
+	}
+
+	public double[][] calcMapEntropy() {
+		double[][] map = new double[height][width];
+		double[][] energyMap = calcMapGradient();
+
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				map[i][j] = ((energyMap[i][j] - calcSinglePixelEntropy(i, j)) / 2.0);
+
+			}
+		}
+
+		return map;
+	}
+
+	private double calcSinglePixelEntropy(int row_i, int col_j) {
+
+		double entropy = 0;
+
+		int row_lower = row_i - 4;
+		int row_upper = row_i + 4;
+		int column_lower = col_j - 4;
+		int column_upper = col_j + 4;
+		int neighbour_grey = 0;
+
+		if (row_i <= 3)
+			row_lower = 0;
+		if (row_i >= height - 4)
+			row_upper = height - 1;
+		if (col_j <= 3)
+			column_lower = 0;
+		if (col_j >= width - 4)
+			column_upper = width - 1;
+		for (int i = row_lower; i <= row_upper; i++) {
+			for (int j = column_lower; j <= column_upper; j++) {
+				neighbour_grey += calcGreyPixel(i, j);
+			}
+		}
+
+		for (int i = row_lower; i <= row_upper; i++) {
+			for (int j = column_lower; j <= column_upper; j++) {
+				double p = p_mn(i, j, neighbour_grey);
+				if (p != 0)
+					entropy += p * Math.log(p);
+			}
+		}
+		return entropy;
+	}
+
+	private int calcGreyPixel(int i, int j) {
+		int pixel = img.getRGB(j, i);
+		int red = (pixel >> 16) & 0xff;
+		int green = (pixel >> 8) & 0xff;
+		int blue = (pixel) & 0xff;
+
+		return (red + green + blue) / 3;
+	}
+
+	private double p_mn(int i, int j, int neighbour_grey) {
+		return ((double) calcGreyPixel(i, j)) / ((double) neighbour_grey);
+	}
+
+	// M(i; j) = e(i; j)+
+	// min(M(i-1; j-1);M(i-1; j);M(i-1; j+1))
+	private double[][] calcDynamicMap() {
+		double[][] map = new double[height][width];
+		for (int j = 0; j < width; j++) {
+			map[0][j] = energyMap[0][j];
+		}
+
+		int currColIndex;
+		double minAdd;
+		for (int i = 1; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				currColIndex = j >= 1 ? j - 1 : j;
+				minAdd = energyMap[i - 1][currColIndex];
+				if (energyMap[i - 1][j] < minAdd) {
+					currColIndex = j;
+				}
+				if (j < width - 1 && energyMap[i - 1][j + 1] < minAdd) {
+					currColIndex = j + 1;
+				}
+				minAdd = map[i - 1][currColIndex];
+				map[i][j] = energyMap[i][j] + minAdd;
+			}
+		}
+		
+		return map;
+	}
+	
+	private double[][] calcDynamicMapForward() {
+		double[][] map = new double[height][width];
+		for (int j = 0; j < width; j++) {
+			map[0][j] = energyMap[0][j];
+		}
+
+		int currColIndex;
+		double minAdd;
+		for (int i = 1; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				currColIndex = j >= 1 ? j - 1 : j;
+				double cl = calcC(Direction.LEFT, i, j);
+				minAdd = energyMap[i - 1][currColIndex] + cl;
+				double cu = calcC(Direction.UP, i, j);
+				if (energyMap[i - 1][j] + cu < minAdd) {
+					currColIndex = j;
+				}
+				double cr = calcC(Direction.RIGHT, i, j);
+				if ((j < width - 1) && (energyMap[i - 1][j + 1] + cr ) < minAdd) {
+					currColIndex = j + 1;
+				}
+				minAdd = map[i - 1][currColIndex];
+				map[i][j] = energyMap[i][j] + minAdd;
+			}
+		}
+		
+		return map;
+	}
+
+	private double calcC(Direction direction, int i, int j)
+	{
+		int colLower = j > 0 ? j-1 : j;
+		int colUpper = j <  width - 1 ? j + 1 : j;
+		double result = 0.0;
+		
+		/*
+		 * 
+		 * 	private int diffRGB(int row_i, int col_j, int i, int j) {
+		int pixel = img.getRGB(j, i);
+		int red_i = (pixel >> 16) & 0xff;
+		int green_i = (pixel >> 8) & 0xff;
+		int blue_i = (pixel) & 0xff;
+		int neighbourPixel = img.getRGB(col_j, row_i);
+		int neighbourRed = (neighbourPixel >> 16) & 0xff;
+		int neighbourGreen = (neighbourPixel >> 8) & 0xff;
+		int neighbourBlue = (neighbourPixel) & 0xff;
+
+		return (Math.abs(red_i - neighbourRed)
+				+ Math.abs(green_i - neighbourGreen) + Math.abs(blue_i
+				- neighbourBlue)) / 3;
+	}
+		 * 
+		 * */
+		switch (direction)
+		{
+		case LEFT:
+			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i)) + Math.abs(img.getRGB(j, i-1) - img.getRGB(colLower, i));
+			break;
+		case RIGHT:
+			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i)) + Math.abs(img.getRGB(j, i-1) - img.getRGB(colUpper, i));
+			break;
+		case UP:
+			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i));
+			break;
+		}
+		return result / 3.0;
+	}
+	
+	private int[] getMinColsForSeam(double[][] map) {
+		int minCols[] = new int[height];
+		int right, middle, left;
+		double currVal, leftVal, rightVal;
+		minCols[height - 1] = minColOfLastRow(map); // initialize last row
+		for (int i = height - 2; i >= 0; i--) {
+			middle = minCols[i + 1];
+			int currCol = (!dontTouchThosePixels[i][middle]) ? middle : -1;
+			currVal = map[i][middle];
+
+			// leftmost free pixel
+			left = middle - 1;
+			while (left >= 0 && dontTouchThosePixels[i][left]) {
+				left--;
+			}
+
+			if (left >= 0) {
+				leftVal = map[i][left];
+				if (currCol == -1 || leftVal < currVal) {
+					currCol = left;
+					currVal = leftVal;
+				}
+			}
+
+			// rightmost free pixel
+			right = middle + 1;
+			while (right < width && dontTouchThosePixels[i][right]) {
+				right++;
+			}
+			if (right < width) {
+				rightVal = map[i][right];
+				if (currCol == -1 || rightVal < currVal)
+					currCol = right;
+			}
+
+			minCols[i] = currCol;
+			dontTouchThosePixels[i][currCol] = true;
+		}
+
+		return minCols;
+
+	}
+
+	/*
+	 * Initialization on the last row before calculating the whole seam
+	 */
+	private int minColOfLastRow(double[][] map) {
+		double curr;
+		double min = map[height - 1][0];
+		int minColOfLastRow = 0;
+		for (int j = 0; j < width; j++) {
+			if (dontTouchThosePixels[height - 1][j])
+				continue;
+			curr = map[height - 1][j];
+			if (curr < min) {
+				min = curr;
+				minColOfLastRow = j;
+			}
+		}
+
+		dontTouchThosePixels[height - 1][minColOfLastRow] = true;
+		return minColOfLastRow;
+	}
+
+    private void buildTransportMap() {
+        int r = Math.abs(height - newHeight) + 1;
+        int c = Math.abs(width - newWidth) + 1;
+        boolean[][] directions = new boolean[r][c]; // false = vertical, true = horizontal
+        int[][] weights = new int[r][c];
+        weights[0][0] = 0;
+        directions[0][0] = false;
+        // case that i=0
+        for (int j=1; j<c; j++) {
+            weights[0][j] = weights[0][j-1] + (int)energyMap[0][width - 1 - (j-1)];
+            directions[0][j] = false; // vertical
+        }
+        // case that j=0
+        for (int i=1; i<r; i++) {
+            weights[i][0] = weights[i-1][0] + (int)energyMap[height - 1 - (i-1)][0];
+            directions[i][0] = true; // horizontal
+        }
+
+        for (int i=1; i<r; i++)
+            for (int j=1; j<c; j++) {
+                int horizontalWeight = weights[i-1][j] + (int)energyMap[height - 1 - (i-1)][width - j - 1];
+                int verticalWeight = weights[i][j-1] + (int)energyMap[height - 1 - i ][width - (j-1) - 1];
+                if (horizontalWeight < verticalWeight) { // choose horizontal
+                    directions[i][j] = true;
+                    weights[i][j] = horizontalWeight;
+                } else { // choose vertical
+                    directions[i][j] = false;
+                    weights[i][j] = verticalWeight;
+                }
+            }
+
+        transportMap = directions;
+    }
+	
+	
+}

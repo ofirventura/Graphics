@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -11,9 +12,12 @@ public class SeamCarving {
 	int newWidth;
 	int newHeight;
 	BufferedImage img;
-	double[][] gradientMap;
+	double[][] energyMap;
 	boolean[][] dontTouchThosePixels;
 	EnergyType energy;
+	private boolean[][] transportMap;
+	private boolean[][] dontTouchThosePixelsRotated;
+	private boolean isImageRotated;
 
 	public SeamCarving(BufferedImage img, int newWidth, int newHeight,
 			int energyType) {
@@ -21,6 +25,7 @@ public class SeamCarving {
 		width = img.getWidth();
 		height = img.getHeight();
 		dontTouchThosePixels = new boolean[height][width];
+		dontTouchThosePixelsRotated = new boolean[height][width];
 		this.newHeight = newHeight;
 		this.newWidth = newWidth;
 		
@@ -51,18 +56,24 @@ public class SeamCarving {
 		BufferedImage temp = new BufferedImage(height, width,
 				BufferedImage.TYPE_INT_RGB);
 		double[][] gradientTransposed = new double[width][height];
+		boolean[][] usedTemp = new boolean[width][height];
+		boolean[][] usedTemp2 = new boolean[width][height];
 		int temp_length;
+	
 
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				temp.setRGB(i, j, img.getRGB(j, i));
-				gradientTransposed[j][i] = gradientMap[i][j];
+				gradientTransposed[j][i] = energyMap[i][j];
+				usedTemp[j][i] = dontTouchThosePixelsRotated[i][j];
+				usedTemp2[j][i] = dontTouchThosePixels[i][j];
 			}
 		}
 
 		img = temp;
-		gradientMap = gradientTransposed;
-		
+		energyMap = gradientTransposed;
+		dontTouchThosePixels = usedTemp;
+		dontTouchThosePixelsRotated = usedTemp2;
 		// Swap newWidth and newHeight
 		temp_length = newWidth;
 		newWidth = newHeight;
@@ -72,18 +83,70 @@ public class SeamCarving {
 		temp_length = width;
 		width = height;
 		height = temp_length;
+		isImageRotated = !isImageRotated;
 	}
 
 	public void Seam() throws IOException {
-
+        int origWidth = width;
+        int origHeight = height;
 		// Vertical seams
 		int SeamsToHandle = Math.abs(newWidth - width); // +1 ???
-		gradientMap = calcMapGradient();
-		for (int i = 0; i < SeamsToHandle; i++) {
-			oneSeam();
+		switch (energy)
+		{
+		case GRADIENT:
+			energyMap = calcMapGradient();
+		case FORWARD:
+			energyMap = calcMapGradient();// TODO: update to forward calculation
+			break;
+		case ENTROPY:
+			energyMap = calcMapEntropy();
+			break;
 		}
+		buildTransportMap();
+		
+		
 
-		transpose();
+        // seam
+        int r = Math.abs(height - newHeight) + 1;
+        int c = Math.abs(width - newWidth) + 1;
+        int i = r - 1;
+        int j = c - 1;
+        dontTouchThosePixels = new boolean[height][width];
+        dontTouchThosePixelsRotated = new boolean[height][width];
+        while (i > 0 || j > 0) {
+            boolean direction = transportMap[i][j];
+
+            if (isImageRotated != direction)
+                transpose();
+
+            oneSeam();
+            if (!direction) // vertical
+                j--;
+            else // horizontal
+                i--;
+        }
+
+       // return image to original direction
+        if (isImageRotated) {
+            transpose();
+        }
+		/*for (int i = 0; i < SeamsToHandle; i++) {
+			oneSeam();
+		}*/
+		File outputfile = new File("image_energy.jpg");
+		BufferedImage img2 = new BufferedImage(energyMap[0].length, energyMap.length, BufferedImage.TYPE_INT_RGB);
+		
+		int n = energyMap.length;
+		int m = energyMap[0].length;
+		for (i = 0; i < n; i++) {
+			for (j = 0; j < m; j++) {
+				img2.setRGB(j, i, ((int)energyMap[i][j]) | ((int)energyMap[i][j] << 8) | ((int)energyMap[i][j] << 16));
+			}
+		}
+		ImageIO.write(img2, "jpg", outputfile);
+		
+		//transpose();*/
+		/*
 		dontTouchThosePixels = new boolean[height][width];
 		SeamsToHandle = Math.abs(newWidth - width); // +1 ???
 
@@ -92,9 +155,23 @@ public class SeamCarving {
 			oneSeam();
 		}
 
-		transpose();
-		File outputfile2 = new File("image_output2.jpg");
-		ImageIO.write(img, "jpg", outputfile2);
+		transpose();*/
+		
+		//File outputfile2 = new File("image_energy2.jpg");
+		//BufferedImage img3 = new BufferedImage(energyMap[0].length, energyMap.length, BufferedImage.TYPE_INT_RGB);
+		/*
+		n = energyMap.length;
+		m = energyMap[0].length;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < m; j++) {
+				img3.setRGB(j, i, ((int)energyMap[i][j]) | ((int)energyMap[i][j] << 8) | ((int)energyMap[i][j] << 16));
+			}
+		}
+		ImageIO.write(img3, "jpg", outputfile2);
+		*/
+		
+		File outputfile3 = new File("image_output2.jpg");
+		ImageIO.write(img, "jpg", outputfile3);
 
 	}
 
@@ -106,20 +183,18 @@ public class SeamCarving {
 		switch (energy)
 		{
 		case GRADIENT:
-			gradientMap = calcMapGradient();
 			dynamicMap = calcDynamicMap();
 		case FORWARD:
-			gradientMap = calcMapGradient();// TODO: update to forward calculation
 			dynamicMap = calcDynamicMapForward();
 			break;
 		case ENTROPY:
-			gradientMap = calcMapEntropy();
 			dynamicMap = calcDynamicMap();
 			break;
 		}
 		
 		int newWidth = width + diff;
 		boolean[][] newDontTouchThosePixels = new boolean[height][newWidth];
+		boolean[][] newDontTouchThosePixelsRotated = new boolean[height][newWidth];
 		double[][] newGradient = new double[height][newWidth];
 		BufferedImage newImg = new BufferedImage(newWidth, height,
 				BufferedImage.TYPE_INT_RGB);
@@ -132,8 +207,9 @@ public class SeamCarving {
 			// What happens before the column:
 			for (int j = 0; j < colToDeal; j++)
 			{
-				newGradient[i][j] = gradientMap[i][j];
+				newGradient[i][j] = energyMap[i][j];
 				newDontTouchThosePixels[i][j] = dontTouchThosePixels[i][j];
+				newDontTouchThosePixelsRotated[i][j] = dontTouchThosePixelsRotated[i][j];
 				newImg.setRGB(j, i, img.getRGB(j, i));
 			}
 
@@ -141,66 +217,93 @@ public class SeamCarving {
 			// and update matrices
 			if (biggerImage)
 			{
-				newImg.setRGB(colToDeal, i, img.getRGB(colToDeal, i));
-				newImg.setRGB(colToDeal + diff, i, img.getRGB(colToDeal, i));
-				newGradient[i][colToDeal] = gradientMap[i][colToDeal];
-				newGradient[i][colToDeal + diff] = gradientMap[i][colToDeal];
+		        int col = getAverageColor(i, colToDeal, Direction.LEFT);
+				newImg.setRGB(colToDeal, i, col);
+				col = getAverageColor(i, colToDeal, Direction.RIGHT);
+				newImg.setRGB(colToDeal + diff, i, col);
+				
+				//int leftIndex = colToDeal- 1 > 0 ? colToDeal - 1 : colToDeal;
+				//int rightIndex = colToDeal + 1 > width - 1 ? width - 1 : colToDeal + 1;
+				newGradient[i][colToDeal] = energyMap[i][colToDeal];
+				newGradient[i][colToDeal + diff] =energyMap[i][colToDeal];
 				newDontTouchThosePixels[i][colToDeal] = true;
 				newDontTouchThosePixels[i][colToDeal + diff] = true;
+				newDontTouchThosePixelsRotated[i][colToDeal] = dontTouchThosePixelsRotated[i][colToDeal];
+				newDontTouchThosePixelsRotated[i][colToDeal + diff] = dontTouchThosePixelsRotated[i][colToDeal];
 			}
 
 			// What happens after the column:
 			for (int j = colToDeal + 1; j < width; j++)// ?
 			{
-				newGradient[i][j + diff] = gradientMap[i][j];
+				newGradient[i][j + diff] = energyMap[i][j];
 				newDontTouchThosePixels[i][j + diff] = dontTouchThosePixels[i][j];
+				newDontTouchThosePixelsRotated[i][j + diff] = dontTouchThosePixelsRotated[i][j];
 				newImg.setRGB(j + diff, i, img.getRGB(j, i));
 			}
 		}
-		gradientMap = newGradient;
+		energyMap = newGradient;
 		dontTouchThosePixels = newDontTouchThosePixels;
+		dontTouchThosePixelsRotated = newDontTouchThosePixelsRotated;
 		img = newImg;
 		width += diff;
-		/*
+		
 		int row_lower;
 		int row_upper;
 		int col_lower;
-		int col_upper;*/
-		/*
-        if (energy == EnergyType.GRADIENT)
-        {
+		int col_upper;
+
+
             for (int row = 0; row < height; row++) {
                 int column = minCols[row];
+                int sizeOfEnv = (energy == EnergyType.ENTROPY) ? 4 : 1;
+                row_lower = row - sizeOfEnv > 0 ? row - 1 : 0;
+                row_upper = row + sizeOfEnv > height-1 ? height-1 : row+1;
+                col_lower = column - sizeOfEnv > 0 ? column - 1 : 0;
+                col_upper = column + sizeOfEnv + diff > width - 1 ? width - 1 : column + 1 + diff;
                 
-                //TODO: used a mapped function
-                row_lower = row - 1 > 0 ? row-1 : 0;
-                row_upper = row + 1 > height-1 ? height-1 : row+1;
-                col_lower = column - 1 > 0 ? column-1 : 0;
-                col_upper = column + 1 + diff > width-1 ? width-1 : column + 1 + diff;
                 for (int i = row_lower; i <= row_upper; i++)
                 {
                     for (int j = col_lower; j <= col_upper; j++)
                     {
-                        gradientMap[i][j] = calcSinglePixelGradient(i, j);
+                        switch (energy)
+                        {
+                        	case GRADIENT:
+                        	case FORWARD:
+                        		energyMap[i][j] = calcSinglePixelGradient(i, j);
+                        	break;
+                        	case ENTROPY:
+                        		energyMap[i][j] = calcSinglePixelEntropy(i, j);
+                        		break;
+                        }
                     }
                 }
             }
-        }*/
+
 	}
 
-	/*
-	 * i - row j - column
-	 * 
-	 * private int convertIndex(int i, int j) { return i * width + j; }
-	 */
-
-
-
-	private int convertIndex(int i, int j)
-	{
-		return i*width + j;
+	private int getAverageColor(int i, int j, Direction d) {
+	    int redColors = 0;
+	    int greenColors = 0;
+	    int blueColors = 0;
+		int directionIndex;
+		if(d == Direction.LEFT) {
+			directionIndex = j - 1 > 0 ? j - 1 : j;
+		}
+		else{
+			directionIndex = j + 1 > width - 1 ? width - 1 : j + 1;
+		}
+	    Color c1 = new Color(img.getRGB(j, i));
+	    Color c2 = new Color(img.getRGB(directionIndex, i));
+	    
+	    redColors = c1.getRed() + c2.getRed();
+        greenColors = c1.getGreen() + c2.getGreen();
+        blueColors = c1.getBlue() + c2.getBlue();
+	    int red = (redColors/2);
+	    int green = (greenColors/2);
+	    int blue = (blueColors/2);
+		return blue | (green << 8) | (red << 16);
 	}
-	
+
 	public double[][] calcMapGradient()
 	{
 		double[][] map = new double[height][width];
@@ -220,8 +323,6 @@ public class SeamCarving {
 
 		int numOfNeighbours = 0;
 		double energy = 0;
-		
-		//TODO: map to function
 		int row_lower = row_i - 1;
 		int row_upper = row_i + 1;
 		int column_lower = col_j - 1;
@@ -251,8 +352,6 @@ public class SeamCarving {
 
 	/*
 	 * val = abs(Ri-R1)+abs(Gi-G1)+abs(Bi-B1) / 3
-
-
 	 */
 	private int diffRGB(int row_i, int col_j, int i, int j) {
 		int pixel = img.getRGB(j, i);
@@ -301,13 +400,6 @@ public class SeamCarving {
 			column_lower = 0;
 		if (col_j >= width - 4)
 			column_upper = width - 1;
-
-		// System.out.println(row_i + " " + col_j);
-		// System.out.println("row upper" + row_upper);
-		// System.out.println("row lower" + row_lower);
-		// System.out.println("col upper" + column_upper);
-		// System.out.println("col lower" + column_lower);
-
 		for (int i = row_lower; i <= row_upper; i++) {
 			for (int j = column_lower; j <= column_upper; j++) {
 				neighbour_grey += calcGreyPixel(i, j);
@@ -337,28 +429,12 @@ public class SeamCarving {
 		return ((double) calcGreyPixel(i, j)) / ((double) neighbour_grey);
 	}
 
-	/*
-	 * private int calcGreyNeighbour(int row_i, int col_j) { int grey_neighbour
-	 * = 0;
-	 * 
-	 * int row_lower = row_i-2; int row_upper = row_i+2; int column_lower =
-	 * col_j-2; int column_upper = col_j+2;
-	 * 
-	 * if (row_i == 0) row_lower = 0; if (row_i == height-1) row_upper =
-	 * height-1; if (col_j == 0) column_lower = 0; if (col_j == width-1)
-	 * column_upper = width-1;
-	 * 
-	 * for (int i = row_lower; i <= row_upper; i++) { for (int j = column_lower;
-	 * j <= column_upper; j++) { grey_neighbour += calcGreyPixel(i, j); } }
-	 * return grey_neighbour; }
-	 */
-
 	// M(i; j) = e(i; j)+
 	// min(M(i-1; j-1);M(i-1; j);M(i-1; j+1))
 	private double[][] calcDynamicMap() {
 		double[][] map = new double[height][width];
 		for (int j = 0; j < width; j++) {
-			map[0][j] = gradientMap[0][j];
+			map[0][j] = energyMap[0][j];
 		}
 
 		int currColIndex;
@@ -366,15 +442,15 @@ public class SeamCarving {
 		for (int i = 1; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				currColIndex = j >= 1 ? j - 1 : j;
-				minAdd = gradientMap[i - 1][currColIndex];
-				if (gradientMap[i - 1][j] < minAdd) {
+				minAdd = energyMap[i - 1][currColIndex];
+				if (energyMap[i - 1][j] < minAdd) {
 					currColIndex = j;
 				}
-				if (j < width - 1 && gradientMap[i - 1][j + 1] < minAdd) {
+				if (j < width - 1 && energyMap[i - 1][j + 1] < minAdd) {
 					currColIndex = j + 1;
 				}
 				minAdd = map[i - 1][currColIndex];
-				map[i][j] = gradientMap[i][j] + minAdd;
+				map[i][j] = energyMap[i][j] + minAdd;
 			}
 		}
 		
@@ -384,7 +460,7 @@ public class SeamCarving {
 	private double[][] calcDynamicMapForward() {
 		double[][] map = new double[height][width];
 		for (int j = 0; j < width; j++) {
-			map[0][j] = gradientMap[0][j];
+			map[0][j] = energyMap[0][j];
 		}
 
 		int currColIndex;
@@ -393,17 +469,17 @@ public class SeamCarving {
 			for (int j = 0; j < width; j++) {
 				currColIndex = j >= 1 ? j - 1 : j;
 				double cl = calcC(Direction.LEFT, i, j);
-				minAdd = gradientMap[i - 1][currColIndex] + cl;
+				minAdd = energyMap[i - 1][currColIndex] + cl;
 				double cu = calcC(Direction.UP, i, j);
-				if (gradientMap[i - 1][j] + cu < minAdd) {
+				if (energyMap[i - 1][j] + cu < minAdd) {
 					currColIndex = j;
 				}
 				double cr = calcC(Direction.RIGHT, i, j);
-				if ((j < width - 1) && (gradientMap[i - 1][j + 1] + cr ) < minAdd) {
+				if ((j < width - 1) && (energyMap[i - 1][j + 1] + cr ) < minAdd) {
 					currColIndex = j + 1;
 				}
 				minAdd = map[i - 1][currColIndex];
-				map[i][j] = gradientMap[i][j] + minAdd;
+				map[i][j] = energyMap[i][j] + minAdd;
 			}
 		}
 		
@@ -415,6 +491,25 @@ public class SeamCarving {
 		int colLower = j > 0 ? j-1 : j;
 		int colUpper = j <  width - 1 ? j + 1 : j;
 		double result = 0.0;
+		
+		/*
+		 * 
+		 * 	private int diffRGB(int row_i, int col_j, int i, int j) {
+		int pixel = img.getRGB(j, i);
+		int red_i = (pixel >> 16) & 0xff;
+		int green_i = (pixel >> 8) & 0xff;
+		int blue_i = (pixel) & 0xff;
+		int neighbourPixel = img.getRGB(col_j, row_i);
+		int neighbourRed = (neighbourPixel >> 16) & 0xff;
+		int neighbourGreen = (neighbourPixel >> 8) & 0xff;
+		int neighbourBlue = (neighbourPixel) & 0xff;
+
+		return (Math.abs(red_i - neighbourRed)
+				+ Math.abs(green_i - neighbourGreen) + Math.abs(blue_i
+				- neighbourBlue)) / 3;
+	}
+		 * 
+		 * */
 		switch (direction)
 		{
 		case LEFT:
@@ -427,7 +522,7 @@ public class SeamCarving {
 			result = Math.abs(img.getRGB(colUpper, i) - img.getRGB(colLower, i));
 			break;
 		}
-		return result;
+		return result / 3.0;
 	}
 	
 	private int[] getMinColsForSeam(double[][] map) {
@@ -466,7 +561,7 @@ public class SeamCarving {
 			}
 
 			minCols[i] = currCol;
-			dontTouchThosePixels[i][currCol] = true;
+			//dontTouchThosePixels[i][currCol] = true;
 		}
 
 		return minCols;
@@ -490,8 +585,43 @@ public class SeamCarving {
 			}
 		}
 
-		dontTouchThosePixels[height - 1][minColOfLastRow] = true;
+		//dontTouchThosePixels[height - 1][minColOfLastRow] = true;
 		return minColOfLastRow;
 	}
 
+    private void buildTransportMap() {
+        int r = Math.abs(height - newHeight) + 1;
+        int c = Math.abs(width - newWidth) + 1;
+        boolean[][] directions = new boolean[r][c]; // false = vertical, true = horizontal
+        int[][] weights = new int[r][c];
+        weights[0][0] = 0;
+        directions[0][0] = false;
+        // case that i=0
+        for (int j=1; j<c; j++) {
+            weights[0][j] = weights[0][j-1] + (int)energyMap[0][width - 1 - (j-1)];
+            directions[0][j] = false; // vertical
+        }
+        // case that j=0
+        for (int i=1; i<r; i++) {
+            weights[i][0] = weights[i-1][0] + (int)energyMap[height - 1 - (i-1)][0];
+            directions[i][0] = true; // horizontal
+        }
+
+        for (int i=1; i<r; i++)
+            for (int j=1; j<c; j++) {
+                int horizontalWeight = weights[i-1][j] + (int)energyMap[height - 1 - (i-1)][width - j - 1];
+                int verticalWeight = weights[i][j-1] + (int)energyMap[height - 1 - i ][width - (j-1) - 1];
+                if (horizontalWeight < verticalWeight) { // choose horizontal
+                    directions[i][j] = true;
+                    weights[i][j] = horizontalWeight;
+                } else { // choose vertical
+                    directions[i][j] = false;
+                    weights[i][j] = verticalWeight;
+                }
+            }
+
+        transportMap = directions;
+    }
+	
+	
 }
