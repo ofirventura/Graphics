@@ -16,7 +16,7 @@ public class Main {
 		int energy =  0;//Integer.parseInt(args[3]);
 		//String outputPath = args[4];
 		BufferedImage img = ImageIO.read(new File(input));
-		SeamCarving s = new SeamCarving(img, newWidth, newHeight, 1);
+		SeamCarving s = new SeamCarving(img, newWidth, newHeight, 2, input);
 		s.Seam();
 		//double[][] a = s.calcMapEntropy();
 /*

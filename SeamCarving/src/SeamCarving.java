@@ -12,15 +12,17 @@ public class SeamCarving {
 	int newWidth;
 	int newHeight;
 	BufferedImage img;
+	BufferedImage seams;
 	double[][] energyMap;
 	boolean[][] dontTouchThosePixels;
 	EnergyType energy;
 	private boolean[][] transportMap;
 	private boolean[][] dontTouchThosePixelsRotated;
+	
 	private boolean isImageRotated;
 
 	public SeamCarving(BufferedImage img, int newWidth, int newHeight,
-			int energyType) {
+			int energyType, String input) {
 		this.img = img;
 		width = img.getWidth();
 		height = img.getHeight();
@@ -40,7 +42,8 @@ public class SeamCarving {
 			energy = EnergyType.FORWARD;
 			break;
 		}
-
+		
+		
 		// TODO: what to do if all pixels are used - newHeight or newWidth > 200% 
 	}
 
@@ -104,8 +107,15 @@ public class SeamCarving {
 		}
 		buildTransportMap();
 		
+		BufferedImage imgB = new BufferedImage(energyMap[0].length, energyMap.length, BufferedImage.TYPE_INT_RGB);
+		File outputfileBefore = new File("image_energy_before.jpg");		
+		for (int i = 0; i < origHeight; i++) {
+			for (int j = 0; j < origWidth; j++) {
+				imgB.setRGB(j, i, ((int)energyMap[i][j]) | ((int)energyMap[i][j] << 8) | ((int)energyMap[i][j] << 16));
+			}
+		}
+		ImageIO.write(imgB, "jpg", outputfileBefore);
 		
-
         // seam
         int r = Math.abs(height - newHeight) + 1;
         int c = Math.abs(width - newWidth) + 1;
@@ -133,7 +143,7 @@ public class SeamCarving {
 		/*for (int i = 0; i < SeamsToHandle; i++) {
 			oneSeam();
 		}*/
-		File outputfile = new File("image_energy.jpg");
+		File outputfile = new File("image_energy_after.jpg");
 		BufferedImage img2 = new BufferedImage(energyMap[0].length, energyMap.length, BufferedImage.TYPE_INT_RGB);
 		
 		int n = energyMap.length;
@@ -172,6 +182,21 @@ public class SeamCarving {
 		
 		File outputfile3 = new File("image_output2.jpg");
 		ImageIO.write(img, "jpg", outputfile3);
+		
+		
+		//Color col = new Color
+		for (i = 0; i < height; i++) {
+			for (j = 0; j < width; j++) {
+				if (dontTouchThosePixels[i][j] || dontTouchThosePixelsRotated[i][j]){
+					
+					img.setRGB(j, i, (255 | 255>>8 | 255>>16));
+				}
+			}
+			
+		}
+		
+		File outputfile4 = new File("image_seams.jpg");
+		ImageIO.write(img, "jpg", outputfile4);
 
 	}
 
@@ -256,10 +281,10 @@ public class SeamCarving {
             for (int row = 0; row < height; row++) {
                 int column = minCols[row];
                 int sizeOfEnv = (energy == EnergyType.ENTROPY) ? 4 : 1;
-                row_lower = row - sizeOfEnv > 0 ? row - 1 : 0;
-                row_upper = row + sizeOfEnv > height-1 ? height-1 : row+1;
-                col_lower = column - sizeOfEnv > 0 ? column - 1 : 0;
-                col_upper = column + sizeOfEnv + diff > width - 1 ? width - 1 : column + 1 + diff;
+                row_lower = (row - sizeOfEnv) > 0 ? row - 1 : 0;
+                row_upper = (row + sizeOfEnv) > (height-1) ? height-1 : row+1;
+                col_lower = (column - sizeOfEnv) > 0 ? column - 1 : 0;
+                col_upper = (column + sizeOfEnv + diff) > (width - 1) ? width - 1 : column + 1 + diff;
                 
                 for (int i = row_lower; i <= row_upper; i++)
                 {
@@ -272,7 +297,11 @@ public class SeamCarving {
                         		energyMap[i][j] = calcSinglePixelGradient(i, j);
                         	break;
                         	case ENTROPY:
-                        		energyMap[i][j] = calcSinglePixelEntropy(i, j);
+                        		energyMap[i][j] = (calcSinglePixelGradient(i, j) - calcSinglePixelEntropy(i, j));
+                        		
+                        		if (energyMap[i][j] < 0){
+                        			System.out.println("i = " + i + " j = " + j);
+                        		}
                         		break;
                         }
                     }
@@ -372,9 +401,11 @@ public class SeamCarving {
 		double[][] map = new double[height][width];
 		double[][] energyMap = calcMapGradient();
 
+		double a;
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				map[i][j] = ((energyMap[i][j] - calcSinglePixelEntropy(i, j)) / 2.0);
+				a = (energyMap[i][j] - calcSinglePixelEntropy(i, j));
+				map[i][j] = a;
 
 			}
 		}
