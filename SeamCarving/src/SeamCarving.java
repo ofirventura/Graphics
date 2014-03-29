@@ -20,9 +20,11 @@ public class SeamCarving {
 	private boolean[][] dontTouchThosePixelsRotated;
 	
 	private boolean isImageRotated;
+	
+	String output;
 
 	public SeamCarving(BufferedImage img, int newWidth, int newHeight,
-			int energyType) {
+			int energyType, String output) {
 		this.img = img;
 		width = img.getWidth();
 		height = img.getHeight();
@@ -43,7 +45,7 @@ public class SeamCarving {
 			break;
 		}
 		
-		
+		this.output = output;
 		// TODO: what to do if all pixels are used - newHeight or newWidth > 200% 
 	}
 
@@ -92,6 +94,8 @@ public class SeamCarving {
 	public void Seam() throws IOException {
         int origWidth = width;
         int origHeight = height;
+        int newWidthLocal = newWidth;
+        int newHeightLocal = newHeight;
 		// Vertical seams
 		int SeamsToHandle = Math.abs(newWidth - width); // +1 ???
 		switch (energy)
@@ -116,7 +120,7 @@ public class SeamCarving {
 				imgB.setRGB(j, i, ((int)energyMap[i][j]) | ((int)energyMap[i][j] << 8) | ((int)energyMap[i][j] << 16));
 			}
 		}
-		ImageIO.write(imgB, "jpg", outputfileBefore);
+		//ImageIO.write(imgB, "jpg", outputfileBefore);
 		
         // seam
         int r = Math.abs(height - newHeight) + 1;
@@ -138,16 +142,18 @@ public class SeamCarving {
 			if (!direction) { // vertical
 				count1++;
 				j--;
-				if (count1 == (int)(Math.abs(origWidth - newWidth))*0.7) {
+				if (count1 % (int)((Math.abs(origWidth - newWidthLocal))*0.6) == 0) {
 					dontTouchThosePixels = new boolean[height][width];
-					System.out.println("blaaa kaki");
+
 				}
+
+
 			} else { // horizontal
 				count2++;
 				i--;
-				if (count2 == (int)(Math.abs(origWidth - newWidth))*0.7) {
+				if (count2 % (int)((Math.abs(origHeight - newHeightLocal))*0.6) == 0) {
 					dontTouchThosePixels = new boolean[height][width];
-					System.out.println("blaaa pipi");
+
 				}
 			}
 		}
@@ -170,7 +176,7 @@ public class SeamCarving {
 				img2.setRGB(j, i, ((int)energyMap[i][j]) | ((int)energyMap[i][j] << 8) | ((int)energyMap[i][j] << 16));
 			}
 		}
-		ImageIO.write(img2, "jpg", outputfile);
+		//ImageIO.write(img2, "jpg", outputfile);
 		
 
 		//transpose();*/
@@ -198,8 +204,13 @@ public class SeamCarving {
 		ImageIO.write(img3, "jpg", outputfile2);
 		*/
 		
-		File outputfile3 = new File("image_output2.jpg");
-		ImageIO.write(img, "jpg", outputfile3);
+		int formatIndex = output.lastIndexOf('.');
+		
+		
+		String format = (formatIndex == -1 ? "jpg" : output.substring(formatIndex + 1));
+		
+		File outputfile3 = new File(output);
+		ImageIO.write(img, format, outputfile3);
 		
 		
 		//Color col = new Color
@@ -207,14 +218,14 @@ public class SeamCarving {
 			for (j = 0; j < width; j++) {
 				if (dontTouchThosePixels[i][j] || dontTouchThosePixelsRotated[i][j]){
 					
-					img.setRGB(j, i, (255 | 255>>8 | 255>>16));
+					img.setRGB(j, i, (255 | 255 << 8 | 255 << 16));
 				}
 			}
 			
 		}
 		
-		File outputfile4 = new File("image_seams.jpg");
-		ImageIO.write(img, "jpg", outputfile4);
+		//File outputfile4 = new File("image_seams.jpg");
+		//ImageIO.write(img, "jpg", outputfile4);
 
 	}
 
@@ -226,14 +237,14 @@ public class SeamCarving {
 		switch (energy)
 		{
 		case GRADIENT:
-			energyMap = calcMapGradient();
+			//energyMap = calcMapGradient();
 			dynamicMap = calcDynamicMap();
 		case FORWARD:
-			energyMap = calcMapGradient();
+			//energyMap = calcMapGradient();
 			dynamicMap = calcDynamicMapForward();
 			break;
 		case ENTROPY:
-			energyMap = calcMapEntropy();
+			//energyMap = calcMapEntropy();
 			dynamicMap = calcDynamicMap();
 			break;
 		}
@@ -299,7 +310,7 @@ public class SeamCarving {
 		int col_lower;
 		int col_upper;
 
-/*
+
             for (int row = 0; row < height; row++) {
                 int column = minCols[row];
                 int sizeOfEnv = (energy == EnergyType.ENTROPY) ? 4 : 1;
@@ -321,14 +332,12 @@ public class SeamCarving {
                         	case ENTROPY:
                         		energyMap[i][j] = (calcSinglePixelGradient(i, j) - calcSinglePixelEntropy(i, j));
                         		
-                        		if (energyMap[i][j] < 0){
-                        			System.out.println("i = " + i + " j = " + j);
-                        		}
+
                         		break;
                         }
                     }
                 }
-            }*/
+            }
 
 	}
 
@@ -532,7 +541,7 @@ public class SeamCarving {
 					minAdd = energyMap[i - 1][j] + cu;
 				}
 				double cr = calcC(Direction.RIGHT, i, j);
-				if ((j < width - 1) && (energyMap[i - 1][j + 1] + cr ) < minAdd) {
+				if ((j < width - 1) && (energyMap[i - 1][j + 1] + cr  < minAdd)) {
 					currColIndex = j + 1;
 				}
 				minAdd = map[i - 1][currColIndex];
@@ -565,39 +574,40 @@ public class SeamCarving {
 	
 	private int[] getMinColsForSeam(double[][] map) {
 		int minCols[] = new int[height];
-		int right, middle, left;
+		int right, middle, left, currCol;
 		double currVal, leftVal, rightVal;
 		minCols[height - 1] = minColOfLastRow(map); // initialize last row
 		for (int i = height - 2; i >= 0; i--) {
 			middle = minCols[i + 1];
-			int currCol = (!dontTouchThosePixels[i][middle]) ? middle : -1;
-			currVal = map[i][middle];
-
 			// leftmost free pixel
 			left = middle - 1;
 			while (left >= 0 && dontTouchThosePixels[i][left]) {
 				left--;
 			}
-
-			if (left >= 0) {
-				leftVal = map[i][left];
-				if (currCol == -1 || leftVal < currVal) {
-					currCol = left;
-					currVal = leftVal;
-				}
-			}
-
+			if (left == -1) left++;
+			
 			// rightmost free pixel
 			right = middle + 1;
 			while (right < width && dontTouchThosePixels[i][right]) {
 				right++;
 			}
-			if (right < width) {
-				rightVal = map[i][right];
-				if (currCol == -1 || rightVal < currVal)
-					currCol = right;
+			if (right == width) right--;
+			
+			currVal = (dontTouchThosePixels[i][middle]) ? Double.MAX_VALUE : map[i][middle];
+			leftVal = (dontTouchThosePixels[i][left]) ? Double.MAX_VALUE : map[i][left];
+			rightVal = (dontTouchThosePixels[i][right]) ? Double.MAX_VALUE : map[i][right];
+			
+			if (leftVal < currVal) {
+				currCol = left;
+				currVal = leftVal;
 			}
-
+			else {
+				currCol = middle;
+			}
+			
+			if (rightVal < currVal)
+				currCol = right;
+			
 			minCols[i] = currCol;
 			//dontTouchThosePixels[i][currCol] = true;
 		}
@@ -605,7 +615,7 @@ public class SeamCarving {
 		return minCols;
 
 	}
-
+	
 	/*
 	 * Initialization on the last row before calculating the whole seam
 	 */

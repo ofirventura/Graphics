@@ -11,13 +11,20 @@ public class Main {
 		
 		//TODO: argument check
 		String input = args[0];
-		int newHeight = Integer.parseInt(args[1]);
-		int newWidth =  Integer.parseInt(args[2]); // TODO : lahafoch
-		int energy =  0;  //Integer.parseInt(args[3]);
-		//String outputPath = args[4];
+		int newHeight = Integer.parseInt(args[2]);
+		int newWidth =  Integer.parseInt(args[1]); // TODO : lahafoch
+		int energy =  Integer.parseInt(args[3]);
+		String outputPath = args[4];
+		
+		//int lastIndex = input.lastIndexOf('.');
+		
+		
+		//String output = outputPath + (lastIndex == -1 ? input : input.substring(lastIndex));
+		//System.out.println(output);
+		
 		BufferedImage img = ImageIO.read(new File(input));
 
-		SeamCarving s = new SeamCarving(img, newWidth, newHeight,2);
+		SeamCarving s = new SeamCarving(img, newWidth, newHeight,energy, outputPath);
 
 		s.Seam();
 		//double[][] a = s.calcMapEntropy();
