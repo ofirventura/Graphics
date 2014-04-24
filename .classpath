@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="SeamCarving/306762279_201085958"/>
+	<classpathentry kind="src" path="SeamCarving/src"/>
+	<classpathentry kind="src" path="SeamCarving2/src"/>
+	<classpathentry kind="lib" path="SeamCarving/306762279_201085958.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="SeamCarving2/bin"/>
+</classpath>
