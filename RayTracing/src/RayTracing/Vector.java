@@ -46,4 +46,25 @@ public class Vector
 		this.z = z;
 	}
 
+    public double length() 
+    {
+        return Math.sqrt(dotProduct(this));
+    }
+
+	public double dotProduct(Vector v) {
+		return this.x*v.x + this.y*v.y + this.z*v.z; 
+	}
+	
+    public Vector add(Vector v) {
+        return new Vector(x+v.x, y+v.y, z+v.z);
+    }
+
+    public Vector mul(double c) {
+        return new Vector(c*x, c*y, c*z);
+    }
+
+    public Vector sub(Vector v) {
+        return add(v.mul(-1));
+    }
+	
 }

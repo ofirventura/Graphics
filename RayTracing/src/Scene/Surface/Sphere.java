@@ -1,5 +1,6 @@
 package Scene.Surface;
 
+import RayTracing.Ray;
 import RayTracing.Vector;
 
 
@@ -37,6 +38,21 @@ public class Sphere extends Surface
 		this.radius = radius;
 	}
 
+    public Vector intersect(Ray ray) {
+    	Vector v = ray.getV();
+    	Vector p0 = ray.getP0();
+        Vector a = center.sub(p0);
+        double vDotProA = v.dotProduct(a);
+        if (vDotProA < 0)
+            return null;
+        Vector R = v.mul(vDotProA/(v.length()*v.length()));
+        double q = Math.sqrt(a.length() - R.length()*R.length());
+        if (q > radius)
+            return null;
+        double h = Math.sqrt(radius*radius - q*q);
+        double RsubHdivV = (R.length()-h)/v.length();
+        return v.mul(RsubHdivV).add(p0);
+    }	
 	
 	
 }
