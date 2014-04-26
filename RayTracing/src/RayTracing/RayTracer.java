@@ -87,6 +87,11 @@ public class RayTracer
 		int lineNum = 0;
 		System.out.println("Started parsing scene file " + sceneFileName);
 
+		List<Material> materials = new ArrayList<Material>();
+		List<Surface> surfaces = new ArrayList<Surface>();
+		List<Light> lights = new ArrayList<Light>();
+		Scene scene = new Scene();
+		
 		while ((line = r.readLine()) != null)
 		{
 			line = line.trim();
@@ -101,10 +106,7 @@ public class RayTracer
 				String code = line.substring(0, 3).toLowerCase();
 				// Split according to white space characters:
 				String[] params = line.substring(3).trim().toLowerCase().split("\\s+");
-				List<Material> materials = new ArrayList<Material>();
-				List<Surface> surfaces = new ArrayList<Surface>();
-				List<Light> lights = new ArrayList<Light>();
-				Scene scene = new Scene();
+
 				
 				if (code.equals("cam"))
 				{
@@ -335,15 +337,17 @@ public class RayTracer
 					System.out.println(String.format("ERROR: Did not recognize object: %s (line %d)", code, lineNum));
 				}
 				
-				scene.setLights(lights);
-				scene.setMaterials(materials);
-				scene.setSurfaces(surfaces);
+
 			}
 		}
 
 		// It is recommended that you check here that the scene is valid,
 		// for example camera settings and all necessary materials were defined.
 
+		scene.setLights(lights);
+		scene.setMaterials(materials);
+		scene.setSurfaces(surfaces);
+		
 		System.out.println("Finished parsing scene file " + sceneFileName);
 
 	}
