@@ -45,15 +45,14 @@ public class Sphere extends Surface
         double vDotProA = v.dotProduct(a);
         if (vDotProA < 0)
             return null;
-        double l = v.length();    
-        Vector R = v.mul(vDotProA/(l*l));
-        double r_l = R.length();
-        double q = Math.sqrt(a.length() - r_l*r_l);
+        Vector R = v.mul(vDotProA/(v.length()*v.length()));
+        double q = Math.sqrt(a.length() - R.length()*R.length());
         if (q > radius)
             return null;
         double h = Math.sqrt(radius*radius - q*q);
-        double RsubHdivV = (r_l-h)/l;
+        double RsubHdivV = (R.length()-h)/v.length();
         return v.mul(RsubHdivV).add(p0);
     }	
-		
+	
+	
 }
