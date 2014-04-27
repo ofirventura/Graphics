@@ -1,7 +1,7 @@
 package Scene.Surface;
 
 import RayTracing.Ray;
-import RayTracing.Vector;
+import RayTracing.Vector3;
 
 
 public class Sphere extends Surface
@@ -15,15 +15,15 @@ public class Sphere extends Surface
   	 * 		automatic material index starting from 1, 2 and so on
 	 */
 
-	private Vector center;
+	private Vector3 center;
 	private double radius;
 	
-	public Vector getCenter()
+	public Vector3 getCenter()
 	{
 		return center;
 	}
 	
-	public void setCenter(Vector center)
+	public void setCenter(Vector3 center)
 	{
 		this.center = center;
 	}
@@ -38,15 +38,15 @@ public class Sphere extends Surface
 		this.radius = radius;
 	}
 
-    public Vector intersect(Ray ray) {
-    	Vector v = ray.getV();
-    	Vector p0 = ray.getP0();
-        Vector a = center.sub(p0);
+    public Vector3 intersect(Ray ray) {
+    	Vector3 v = ray.getV();
+    	Vector3 p0 = ray.getP0();
+        Vector3 a = center.sub(p0);
         double vDotProA = v.dotProduct(a);
         if (vDotProA < 0)
             return null;
         double l = v.length();    
-        Vector R = v.mul(vDotProA/(l*l));
+        Vector3 R = v.mul(vDotProA/(l*l));
         double r_l = R.length();
         double q = Math.sqrt(a.length() - r_l*r_l);
         if (q > radius)

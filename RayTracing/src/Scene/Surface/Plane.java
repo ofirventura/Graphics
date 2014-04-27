@@ -1,7 +1,7 @@
 package Scene.Surface;
 
 import RayTracing.Ray;
-import RayTracing.Vector;
+import RayTracing.Vector3;
 
 
 public class Plane extends Surface
@@ -14,15 +14,15 @@ public class Plane extends Surface
   	 * 		params[4] = material index
 	 */
 	
-	private Vector normal;
+	private Vector3 normal;
 	private double offset;
 	
-	public Vector getNormal()
+	public Vector3 getNormal()
 	{
 		return normal;
 	}
 	
-	public void setNormal(Vector normal)
+	public void setNormal(Vector3 normal)
 	{
 		this.normal = normal;
 	}
@@ -37,9 +37,9 @@ public class Plane extends Surface
 		this.offset = offset;
 	}
 	
-    public Vector intersect(Ray ray) {
-        Vector p0 = ray.getP0();
-        Vector v = ray.getV();
+    public Vector3 intersect(Ray ray) {
+        Vector3 p0 = ray.getP0();
+        Vector3 v = ray.getV();
         double nDotP0 = normal.dotProduct(p0);
         double nDotv = normal.dotProduct(v);
         if (nDotv == 0)

@@ -2,7 +2,7 @@ package Scene;
 
 import java.awt.Color;
 
-import RayTracing.Vector;
+import RayTracing.Vector3;
 
 
 public class Light
@@ -17,18 +17,18 @@ public class Light
   	 * 		params[8] = light width / radius (used for soft shadows)
 	 */
 	
-	private Vector position;
+	private Vector3 position;
 	private Color color;
 	private double specularIntensity;
 	private double shadowIntensity;
 	private double radius;
 	
-	public Vector getPosition()
+	public Vector3 getPosition()
 	{
 		return position;
 	}
 	
-	public void setPosition(Vector position)
+	public void setPosition(Vector3 position)
 	{
 		this.position = position;
 	}

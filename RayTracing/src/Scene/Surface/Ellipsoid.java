@@ -1,7 +1,7 @@
 package Scene.Surface;
 
-import RayTracing.Matrix;
-import RayTracing.Vector;
+import RayTracing.Matrix3;
+import RayTracing.Vector3;
 
 
 public class Ellipsoid extends Surface
@@ -16,25 +16,25 @@ public class Ellipsoid extends Surface
   	 * 		params[12] = material index 
 	 */
 	
-	private Vector center;
-	private Matrix matrix;
+	private Vector3 center;
+	private Matrix3 matrix;
 	
-	public Vector getCenter()
+	public Vector3 getCenter()
 	{
 		return center;
 	}
 	
-	public void setCenter(Vector center)
+	public void setCenter(Vector3 center)
 	{
 		this.center = center;
 	}
 
-	public Matrix getMatrix()
+	public Matrix3 getMatrix()
 	{
 		return matrix;
 	}
 
-	public void setMatrix(Matrix matrix)
+	public void setMatrix(Matrix3 matrix)
 	{
 		this.matrix = matrix;
 	}

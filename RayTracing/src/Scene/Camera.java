@@ -1,6 +1,7 @@
 package Scene;
 
-import RayTracing.Vector;
+import RayTracing.Matrix4;
+import RayTracing.Vector3;
 
 
 public class Camera
@@ -14,38 +15,43 @@ public class Camera
 	 * 		params[10] = screen width from camera 
 	 */
 	
-	private Vector position;
-	private Vector lookAtPosition;
-	private Vector upVector;
+	private Vector3 position;
+	private Vector3 lookAtPosition;
+	private Vector3 upVector;
 	private double screenDist;
 	private double screenWidth;
 	
-	public Vector getPosition()
+	private Vector3 w;
+	private Vector3 u;
+	private Vector3 v;
+	private Matrix4 m;
+	
+	public Vector3 getPosition()
 	{
 		return position;
 	}
 	
-	public void setPosition(Vector position)
+	public void setPosition(Vector3 position)
 	{
 		this.position = position;
 	}
 
-	public Vector getLookAtPosition()
+	public Vector3 getLookAtPosition()
 	{
 		return lookAtPosition;
 	}
 
-	public void setLookAtPosition(Vector lookAtPosition)
+	public void setLookAtPosition(Vector3 lookAtPosition)
 	{
 		this.lookAtPosition = lookAtPosition;
 	}
 
-	public Vector getUpVector()
+	public Vector3 getUpVector()
 	{
 		return upVector;
 	}
 
-	public void setUpVector(Vector upVector)
+	public void setUpVector(Vector3 upVector)
 	{
 		this.upVector = upVector;
 	}
@@ -69,4 +75,45 @@ public class Camera
 	{
 		this.screenWidth = screenWidth;
 	}
+	
+	public Matrix4 calcTransMatrix()
+	{
+		this.m = new Matrix4();
+		
+		this.w = lookAtPosition.substract(position);
+		this.w.normal();
+		
+		this.u = upVector.crossProduct(this.w);
+		this.u.normal();
+		
+		this.v = this.w.crossProduct(this.u);
+		this.v.normal();
+		
+		this.m.setRow(0, this.w.getX(), this.w.getY(), this.w.getZ(), (double)0.0);
+		this.m.setRow(1, this.u.getX(), this.u.getY(), this.u.getZ(), (double)0.0);
+		this.m.setRow(2, this.v.getX(), this.v.getY(), this.v.getZ(), (double)0.0);
+		this.m.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
+		
+		
+		return this.m;
+	}
+	
+	public Vector3 getPositionByCamera(Vector3 v)
+	{
+		Vector3 result = new Vector3(0,0,0);
+		
+		Matrix4 newMat = new Matrix4();
+		
+		newMat.setRow(0, (double)1.0, (double)0.0, (double)0.0, (-1) * (double)v.getX());
+		newMat.setRow(1, (double)0.0, (double)1.0, (double)0.0, (-1) * (double)v.getY());
+		newMat.setRow(2, (double)0.0, (double)0.0, (double)1.0, (-1) * (double)v.getZ());
+		newMat.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
+		
+		newMat = this.m.multiply(newMat);
+		result = this.m.multiply(v); // check this!!!!
+		
+		return result;
+	}
+
+
 }

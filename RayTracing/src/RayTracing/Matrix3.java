@@ -1,12 +1,12 @@
 package RayTracing;
 
 
-public class Matrix
+public class Matrix3
 {
 
 	double[][] matrix;
 	
-	public Matrix()
+	public Matrix3()
 	{
 		this.matrix = new double[3][3];
 	}

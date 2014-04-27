@@ -127,13 +127,13 @@ public class RayTracer
 					}
 					
 					Camera camera = new Camera();
-					camera.setPosition(new Vector(Double.parseDouble(params[0]), 
+					camera.setPosition(new Vector3(Double.parseDouble(params[0]), 
 												  Double.parseDouble(params[1]), 
 												  Double.parseDouble(params[2])));
-					camera.setLookAtPosition(new Vector(Double.parseDouble(params[3]), 
+					camera.setLookAtPosition(new Vector3(Double.parseDouble(params[3]), 
 														Double.parseDouble(params[4]), 
 														Double.parseDouble(params[5])));
-					camera.setUpVector(new Vector(Double.parseDouble(params[6]), 
+					camera.setUpVector(new Vector3(Double.parseDouble(params[6]), 
 												  Double.parseDouble(params[7]), 
 												  Double.parseDouble(params[8])));
 					camera.setScreenDist(Double.parseDouble(params[9]));
@@ -222,7 +222,7 @@ public class RayTracer
 					}
 					Sphere sphere = new Sphere();
 					
-					sphere.setCenter(new Vector(Double.parseDouble(params[0]), 
+					sphere.setCenter(new Vector3(Double.parseDouble(params[0]), 
 												Double.parseDouble(params[1]), 
 												Double.parseDouble(params[2])));
 					sphere.setRadius(Double.parseDouble(params[3]));
@@ -250,7 +250,7 @@ public class RayTracer
 					
 					Plane plane = new Plane();
 					
-					plane.setNormal(new Vector(Double.parseDouble(params[0]), 
+					plane.setNormal(new Vector3(Double.parseDouble(params[0]), 
 											   Double.parseDouble(params[1]), 
 											   Double.parseDouble(params[2])));
 					plane.setOffset(Double.parseDouble(params[3]));
@@ -280,7 +280,7 @@ public class RayTracer
 					
 					Ellipsoid ellipse = new Ellipsoid();
 					
-					ellipse.setCenter(new Vector(Double.parseDouble(params[0]), 
+					ellipse.setCenter(new Vector3(Double.parseDouble(params[0]), 
 												 Double.parseDouble(params[1]), 
 												 Double.parseDouble(params[2])));
 					ellipse.getMatrix().setRow(0, Double.parseDouble(params[3]), 
@@ -318,7 +318,7 @@ public class RayTracer
 
 					Light light = new Light();
 					
-					light.setPosition(new Vector(Double.parseDouble(params[0]), 
+					light.setPosition(new Vector3(Double.parseDouble(params[0]), 
 												 Double.parseDouble(params[1]), 
 												 Double.parseDouble(params[2])));
 					light.setColor(new Color(Float.parseFloat(params[3]),
