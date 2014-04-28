@@ -1,6 +1,7 @@
 package Scene;
 
 import RayTracing.Matrix4;
+import RayTracing.Ray;
 import RayTracing.Vector3;
 
 
@@ -21,10 +22,12 @@ public class Camera
 	private double screenDist;
 	private double screenWidth;
 	
-	private Vector3 w;
-	private Vector3 u;
-	private Vector3 v;
+	private Vector3 towards;
+	private Vector3 right;
+	private Vector3 up;
 	private Matrix4 m;
+	
+	private Vector3 p1;
 	
 	public Vector3 getPosition()
 	{
@@ -80,32 +83,82 @@ public class Camera
 	{
 		this.m = new Matrix4();
 		
-		this.w = lookAtPosition.sub(position);
-		this.w.normal();
+		this.towards = lookAtPosition.sub(position);
+		this.towards.normal();
 		
-		this.u = upVector.crossProduct(this.w);
-		this.u.normal();
+		this.right = this.towards.crossProduct(this.upVector);
+		this.right.normal();
 		
-		this.v = this.w.crossProduct(this.u);
-		this.v.normal();
+		this.up = this.towards.crossProduct(this.right.mul(-1));
+		this.up.normal();
 		
-		this.m.setRow(0, this.w.getX(), this.w.getY(), this.w.getZ(), (double)0.0);
-		this.m.setRow(1, this.u.getX(), this.u.getY(), this.u.getZ(), (double)0.0);
-		this.m.setRow(2, this.v.getX(), this.v.getY(), this.v.getZ(), (double)0.0);
+		this.m.setRow(0, this.towards.getX(), this.towards.getY(), this.towards.getZ(), (double)0.0);
+		this.m.setRow(1, this.right.getX(), this.right.getY(), this.right.getZ(), (double)0.0);
+		this.m.setRow(2, this.up.getX(), this.up.getY(), this.up.getZ(), (double)0.0);
 		this.m.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
 		
 		Matrix4 newMat = new Matrix4();
 		
-		newMat.setRow(0, (double)1.0, (double)0.0, (double)0.0, (-1) * (double)v.getX());
-		newMat.setRow(1, (double)0.0, (double)1.0, (double)0.0, (-1) * (double)v.getY());
-		newMat.setRow(2, (double)0.0, (double)0.0, (double)1.0, (-1) * (double)v.getZ());
+		newMat.setRow(0, (double)1.0, (double)0.0, (double)0.0, (-1) * (double)this.position.getX());
+		newMat.setRow(1, (double)0.0, (double)1.0, (double)0.0, (-1) * (double)this.position.getY());
+		newMat.setRow(2, (double)0.0, (double)0.0, (double)1.0, (-1) * (double)this.position.getZ());
 		newMat.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
 		
 		this.m.setMatrix(this.m.multiply(newMat).getMatrix());
 		
+		computeP1();
+	}
+
+	public void computeP1()
+	{
+		double teta = getTeta();
+		Vector3 u = this.right.mul(Math.tan(teta));
+		Vector3 w = this.up.mul(Math.tan(teta));
+		Vector3 v = this.towards.sub(u.sub(w));
+		this.p1 = this.position.add(v.mul(this.screenDist));
+				
+	}
+
+	public double getTeta()
+	{
+		
+		return Math.tan((this.screenWidth/2) / this.screenDist);
 	}
 	
-
+	public Vector3 getP1()
+	{
+		return this.p1;
+	}
+	
+	public Matrix4 getM()
+	{
+		return this.m;
+	}
+	
+	public Vector3 getTowards()
+	{
+		return this.towards;
+	}
+	
+	public Vector3 getRight()
+	{
+		return this.right;
+	}
+	
+	public Vector3 getUp()
+	{
+		return this.up;
+	}
+	
+	public Ray createRay(int row, int col)
+	{
+		/////// check if screen width or image width
+		Vector3 v = this.right.mul((row/this.screenWidth - 0.5) * 2 * this.screenDist * Math.tan(getTeta()));
+		Vector3 u = this.up.mul((row/this.screenWidth - 0.5) * 2 * this.screenDist * Math.tan(getTeta()));
+		Vector3 p = this.p1.add(v.add(u));
+		
+		return new Ray(this.position, p);
+	}
 
 
 }

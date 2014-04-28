@@ -53,8 +53,8 @@ public class Vector3
 		Vector3 result = new Vector3(0, 0, 0);
 		
 		result.setX((this.y * v.getZ()) - (this.z * v.getY()));
-		result.setY((this.x * v.getZ()) - (this.z * v.getX()));
-		result.setZ((this.y * v.getX()) - (this.x * v.getY()));
+		result.setY((this.z * v.getX()) - (this.x * v.getZ()));
+		result.setZ((this.x * v.getY()) - (this.y * v.getX()));
 		
 		return null;
 	}
