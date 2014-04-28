@@ -76,11 +76,11 @@ public class Camera
 		this.screenWidth = screenWidth;
 	}
 	
-	public Matrix4 calcTransMatrix()
+	public void calcTransMatrix()
 	{
 		this.m = new Matrix4();
 		
-		this.w = lookAtPosition.substract(position);
+		this.w = lookAtPosition.sub(position);
 		this.w.normal();
 		
 		this.u = upVector.crossProduct(this.w);
@@ -94,14 +94,6 @@ public class Camera
 		this.m.setRow(2, this.v.getX(), this.v.getY(), this.v.getZ(), (double)0.0);
 		this.m.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
 		
-		
-		return this.m;
-	}
-	
-	public Vector3 getPositionByCamera(Vector3 v)
-	{
-		Vector3 result = new Vector3(0,0,0);
-		
 		Matrix4 newMat = new Matrix4();
 		
 		newMat.setRow(0, (double)1.0, (double)0.0, (double)0.0, (-1) * (double)v.getX());
@@ -109,11 +101,11 @@ public class Camera
 		newMat.setRow(2, (double)0.0, (double)0.0, (double)1.0, (-1) * (double)v.getZ());
 		newMat.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
 		
-		newMat = this.m.multiply(newMat);
-		result = this.m.multiply(v); // check this!!!!
+		this.m.setMatrix(this.m.multiply(newMat).getMatrix());
 		
-		return result;
 	}
+	
+
 
 
 }

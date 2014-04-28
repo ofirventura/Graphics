@@ -17,7 +17,8 @@ public class Plane extends Surface
 	private Vector3 normal;
 	private double offset;
 	
-	public Vector3 getNormal()
+
+	public Vector3 getNormal(Vector3 p)
 	{
 		return normal;
 	}
@@ -37,15 +38,19 @@ public class Plane extends Surface
 		this.offset = offset;
 	}
 	
-    public Vector3 intersect(Ray ray) {
+
+    public Vector3 intersect(Ray ray)
+    {
         Vector3 p0 = ray.getP0();
         Vector3 v = ray.getV();
+        v.normal();
+
         double nDotP0 = normal.dotProduct(p0);
         double nDotv = normal.dotProduct(v);
-        if (nDotv == 0)
+        if (nDotv <= 0)
         		return null;
         double t = (offset - nDotP0) / nDotv ;
         return p0.add(v.mul(t));
-    }
+     }
 	
 }

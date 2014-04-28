@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename local variable &apos;RsubHdivV&apos; in &apos;Scene.Surface.Sphere.intersect(...)&apos; to &apos;t&apos;&#x0D;&#x0A;- Original project: &apos;RayTracing&apos;&#x0D;&#x0A;- Original element: &apos;Scene.Surface.Sphere.intersect(Ray).RsubHdivV&apos;&#x0D;&#x0A;- Renamed element: &apos;RsubHdivV&apos;&#x0D;&#x0A;- Update references to refactored element" description="Rename local variable &apos;RsubHdivV&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/src&lt;Scene.Surface{Sphere.java[Sphere~intersect~QRay;@RsubHdivV!1230!1258!1237!1245!D!0!false" name="t" references="true" stamp="1398623334652" version="1.0"/>
+</session>

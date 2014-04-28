@@ -42,4 +42,44 @@ public class Matrix3
 	{
 		return this.matrix[row][col];
 	}
+	
+	public Vector3 mulVector(Vector3 v)
+	{
+		Vector3 w = new Vector3(0,0,0); 
+		double[] row;
+		double val;
+		for (int i = 0 ; i < 3; i++)
+		{
+			row = getRow(i);
+			val = v.getX()*row[0] + v.getY()*row[1] + v.getZ()*row[2];
+			switch (i){
+				case 0:
+					w.setX(val);
+					break;
+				case 1:
+					w.setY(val);
+					break;
+				case 2:
+					w.setZ(val);
+					break;
+			}
+			
+		}
+		return w;
+	}
+	/*
+	public Matrix mulConst(double c){
+		double[][] m = new double[3][3];
+		for (int i = 0; i < m.length; i++)
+		{
+			for (int j = 0; j < m[0].length; j++)
+			{
+				m[i][j] = c*getCell(i, j);
+			}
+		}
+		
+		Matrix M = new Matrix();
+		M.setMatrix(m);
+		return M;
+	}*/
 }

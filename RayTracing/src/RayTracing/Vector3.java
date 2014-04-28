@@ -46,18 +46,6 @@ public class Vector3
 		this.z = z;
 	}
 
-	public void normal()
-	{
-		double num = Math.sqrt(this.x*this.x + this.y*this.y + this.z*this.z);
-		
-		if (num != 0)
-		{
-			this.x /= num;
-			this.y /= num;
-			this.z /= num;
-		}
-		
-	}
 
 	public Vector3 crossProduct(Vector3 v)
 	{
@@ -71,15 +59,34 @@ public class Vector3
 		return null;
 	}
 
-	public Vector3 substract(Vector3 v)
-	{
-		Vector3 result = new Vector3(0, 0, 0);
-		
-		result.setX(this.x - v.getX());
-		result.setY(this.y - v.getY());
-		result.setZ(this.z - v.getZ());
-		
-		return result;
+	public double length() 
+    {
+        return Math.sqrt(dotProduct(this));
+    }
+
+	public double dotProduct(Vector3 v) {
+		return this.x*v.x + this.y*v.y + this.z*v.z; 
 	}
+	
+    public Vector3 add(Vector3 v) {
+        return new Vector3(x + v.x, y + v.y, z + v.z);
+    }
+
+    public Vector3 mul(double c) {
+        return new Vector3(c * x, c * y, c * z);
+    }
+
+    public Vector3 sub(Vector3 v) {
+        return add(v.mul(-1));
+    }
+    
+    public void normal()
+    {
+    	double l = length();
+    	if (l == 0) return;
+    	x = x/l;
+    	y = y/l;
+    	z = z/l;
+    }
 
 }
