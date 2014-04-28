@@ -1,5 +1,8 @@
 package Scene.Surface;
 
+import RayTracing.Ray;
+import RayTracing.Vector;
+
 
 public abstract class Surface
 {
@@ -15,4 +18,7 @@ public abstract class Surface
 	{
 		this.material = material;
 	}
+	
+	public abstract Vector intersect(Ray ray);
+	public abstract Vector getNormal(Vector p);
 }

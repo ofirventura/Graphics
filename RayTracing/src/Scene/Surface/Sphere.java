@@ -40,6 +40,7 @@ public class Sphere extends Surface
 
     public Vector intersect(Ray ray) {
     	Vector v = ray.getV();
+    	v.normal();
     	Vector p0 = ray.getP0();
         Vector a = center.sub(p0);
         double vDotProA = v.dotProduct(a);
@@ -52,8 +53,22 @@ public class Sphere extends Surface
         if (q > radius)
             return null;
         double h = Math.sqrt(radius*radius - q*q);
-        double RsubHdivV = (r_l-h)/l;
-        return v.mul(RsubHdivV).add(p0);
+        
+        double t1 = (r_l-h)/l;
+        Vector p1 = v.mul(t1).add(p0);
+        Vector dist1 = p0.sub(p1);
+        
+        double t2 = (r_l+h)/l;
+        Vector p2 = v.mul(t2).add(p0);
+        Vector dist2 = p0.sub(p2);
+        
+        return dist1.length() > dist2.length() ? p2 : p1; 
     }	
+    
+    public Vector getNormal(Vector p) {
+    	Vector result = p.sub(center);
+    	result.normal();
+        return result;
+    }
 		
 }

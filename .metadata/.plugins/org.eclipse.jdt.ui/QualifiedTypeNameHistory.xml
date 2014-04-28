@@ -6,4 +6,7 @@
 <fullyQualifiedTypeName name="java.lang.Integer"/>
 <fullyQualifiedTypeName name="java.awt.image.BufferedImage"/>
 <fullyQualifiedTypeName name="java.awt.Color"/>
+<fullyQualifiedTypeName name="RayTracing.Ray"/>
+<fullyQualifiedTypeName name="RayTracing.Vector"/>
+<fullyQualifiedTypeName name="RayTracing.Matrix"/>
 </qualifiedTypeNameHistroy>

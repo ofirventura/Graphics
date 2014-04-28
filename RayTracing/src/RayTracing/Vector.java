@@ -66,5 +66,15 @@ public class Vector
     public Vector sub(Vector v) {
         return add(v.mul(-1));
     }
+    
+    public void normal()
+    {
+    	double l = length();
+    	if (l == 0) return;
+    	x = x/l;
+    	y = y/l;
+    	z = z/l;
+    }
+    
 	
 }

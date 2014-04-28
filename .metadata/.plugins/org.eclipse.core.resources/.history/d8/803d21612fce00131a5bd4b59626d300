@@ -1,0 +1,57 @@
+package Scene.Surface;
+
+import RayTracing.Matrix;
+import RayTracing.Ray;
+import RayTracing.Vector;
+
+
+public class Ellipsoid extends Surface
+{
+
+	/*
+	 * "elp" = defines a new ellipsoid 
+ 	 * 		params[0,1,2] = position of the ellipsoid center (x, y, z) 
+  	 * 		params[3,4,5] = first row of transformation matrix 
+  	 * 		params[6,7,8] = second row of transformation matrix 
+  	 * 		params[9,10,11] = third row of transformation matrix 
+  	 * 		params[12] = material index 
+	 */
+	
+	private Vector center;
+	private Matrix matrix;
+	
+	public Vector getCenter()
+	{
+		return center;
+	}
+	
+	public void setCenter(Vector center)
+	{
+		this.center = center;
+	}
+
+	public Matrix getMatrix()
+	{
+		return matrix;
+	}
+
+	public void setMatrix(Matrix matrix)
+	{
+		this.matrix = matrix;
+	}
+	
+	public Vector intersect(Ray ray)
+	{
+		Vector v = ray.getV();
+		Vector p0 = ray.getP0();
+		Matrix m = new Matrix();
+		double a = 0,b = 0,c = 0; //???
+		m.setCell(0, 0, 1/a);
+		m.setCell(1, 1, 1/b);
+		m.setCell(2, 2, 1/c);
+		Vector v1 = m.mulVector(v);
+		Vector p1 = m.mulVector(p0).sub(m.mulVector(center));
+		return center;
+		
+	}
+}

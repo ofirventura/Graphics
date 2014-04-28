@@ -1,0 +1,23 @@
+package Scene.Surface;
+
+import RayTracing.Ray;
+import RayTracing.Vector;
+
+
+public abstract class Surface
+{
+
+	private int material;
+
+	public int getMaterial()
+	{
+		return material;
+	}
+
+	public void setMaterial(int material)
+	{
+		this.material = material;
+	}
+	
+	public abstract Vector intersect(Ray ray);
+}
