@@ -1,6 +1,6 @@
 package RayTracing;
 
-import java.awt.Color;
+
 import java.awt.Transparency;
 import java.awt.color.*;
 import java.awt.image.*;
@@ -24,7 +24,8 @@ public class RayTracer
 
 	public int imageWidth;
 	public int imageHeight;
-
+	public Scene scene;
+	
 	/**
 	 * Runs the ray tracer. Takes scene file, output image file and image size
 	 * as input.
@@ -90,7 +91,7 @@ public class RayTracer
 		List<Material> materials = new ArrayList<Material>();
 		List<Surface> surfaces = new ArrayList<Surface>();
 		List<Light> lights = new ArrayList<Light>();
-		Scene scene = new Scene();
+		scene = new Scene();
 		
 		while ((line = r.readLine()) != null)
 		{
@@ -373,6 +374,17 @@ public class RayTracer
 		// Each of the red, green and blue components should be a byte, i.e.
 		// 0-255
 
+		for (int i = 0; i < imageHeight; i++)
+		{
+			for (int j = 0; j < imageWidth; j++)
+			{
+				Color col = scene.getColorForPixel(i, j);
+				rgbData[(j*this.imageWidth + i)*3] 	   = (byte)col.getR();
+				rgbData[(j*this.imageWidth + i)*3 + 1] = (byte)col.getG();
+				rgbData[(j*this.imageWidth + i)*3 + 2] = (byte)col.getB();
+			}
+		}
+		
 		long endTime = System.currentTimeMillis();
 		Long renderTime = endTime - startTime;
 

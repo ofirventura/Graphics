@@ -47,7 +47,7 @@ public class Ellipsoid extends Surface
 		return result;
 	}
 	
-	public Vector3 intersect(Ray ray)
+	public double intersect(Ray ray)
 	{
 		Vector3 v = ray.getV();
 		Vector3 p0 = ray.getP0();

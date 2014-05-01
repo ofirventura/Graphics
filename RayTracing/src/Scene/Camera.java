@@ -150,14 +150,17 @@ public class Camera
 		return this.up;
 	}
 	
-	public Ray createRay(int row, int col)
+	public Ray createRay(int row, int col, int imageWidth)
 	{
-		/////// check if screen width or image width
-		Vector3 v = this.right.mul((row/this.screenWidth - 0.5) * 2 * this.screenDist * Math.tan(getTeta()));
-		Vector3 u = this.up.mul((row/this.screenWidth - 0.5) * 2 * this.screenDist * Math.tan(getTeta()));
+		
+		Vector3 v = this.right.mul((row/imageWidth + 0.5) * 2 * this.screenDist * Math.tan(getTeta()));
+		Vector3 u = this.up.mul((row/imageWidth + 0.5) * 2 * this.screenDist * Math.tan(getTeta()));
 		Vector3 p = this.p1.add(v.add(u));
 		
-		return new Ray(this.position, p);
+		Vector3 V = p.sub(this.position);
+		V.normal();
+		
+		return new Ray(this.position, V);
 	}
 
 

@@ -1,6 +1,8 @@
 package Scene;
 
-import java.awt.Color;
+import RayTracing.Color;
+
+
 
 public class Material
 {

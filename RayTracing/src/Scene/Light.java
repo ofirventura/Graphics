@@ -1,7 +1,8 @@
 package Scene;
 
-import java.awt.Color;
 
+
+import RayTracing.Color;
 import RayTracing.Vector3;
 
 
