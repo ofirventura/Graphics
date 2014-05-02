@@ -39,31 +39,31 @@ public class Sphere extends Surface
 	}
 
 
-    public Vector3 intersect(Ray ray) {
+    public Double intersect(Ray ray) {
     	Vector3 v = ray.getV();
     	v.normal();
     	Vector3 p0 = ray.getP0();
         Vector3 a = center.sub(p0);
         double vDotProA = v.dotProduct(a);
         if (vDotProA < 0)
-            return null;
+            return Double.POSITIVE_INFINITY;
         double l = v.length();    
-        Vector3 R = v.mul(vDotProA/(l*l));
+        Vector3 R = v.mul(vDotProA/(l*l));   
         double r_l = R.length();
-        double q = Math.sqrt(a.length() - r_l*r_l);
+        double q = Math.sqrt(a.length()*a.length() - r_l*r_l);
         if (q > radius)
-            return null;
+            return Double.POSITIVE_INFINITY;
         double h = Math.sqrt(radius*radius - q*q);
         
-        double t1 = (r_l-h)/l;
+        double t1 = vDotProA - h;//(r_l-h);//\l
         Vector3 p1 = v.mul(t1).add(p0);
         Vector3 dist1 = p0.sub(p1);
         
-        double t2 = (r_l+h)/l;
+        double t2 = vDotProA + h;//(r_l+h);//\l
         Vector3 p2 = v.mul(t2).add(p0);
         Vector3 dist2 = p0.sub(p2);
         
-        return dist1.length() > dist2.length() ? p2 : p1; 
+        return dist1.length() > dist2.length() ? t2 : t1; 
     }	
     
     public Vector3 getNormal(Vector3 p) {

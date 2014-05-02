@@ -67,19 +67,20 @@ public class Matrix3
 		}
 		return w;
 	}
-	/*
-	public Matrix mulConst(double c){
+	
+	public Matrix3 transpose(){
 		double[][] m = new double[3][3];
 		for (int i = 0; i < m.length; i++)
 		{
 			for (int j = 0; j < m[0].length; j++)
 			{
-				m[i][j] = c*getCell(i, j);
+				m[i][j] = getCell(j, i);
 			}
 		}
 		
-		Matrix M = new Matrix();
+		Matrix3 M = new Matrix3();
 		M.setMatrix(m);
 		return M;
-	}*/
+	}
+
 }

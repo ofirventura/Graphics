@@ -42,12 +42,14 @@ public class Ellipsoid extends Surface
 	
 	public Vector3 getNormal(Vector3 p)
 	{
-		Vector3 result = matrix.mulVector(p).sub(matrix.mulVector(center));
+		Vector3 temp = matrix.mulVector(p).sub(matrix.mulVector(center));
+		temp.normal(); 
+		Vector3 result = matrix.transpose().mulVector(temp);
 		result.normal();
 		return result;
 	}
 	
-	public double intersect(Ray ray)
+	public Double intersect(Ray ray)
 	{
 		Vector3 v = ray.getV();
 		Vector3 p0 = ray.getP0();
@@ -61,13 +63,14 @@ public class Ellipsoid extends Surface
 		// no intersection
 		if (delta < 0 )
 		{
-			return null;
+			return Double.POSITIVE_INFINITY;
 		}
 		// one point of intersection
 		else if (delta == 0)
 		{
 			double t= x/(2*v1Len*v1Len);
-			return p0.add(v.mul(t));
+			return t;
+			//return p0.add(v.mul(t));
 		}
 		// two points
 		else 
@@ -80,7 +83,7 @@ public class Ellipsoid extends Surface
 			Vector3 result2 = p0.add(v.mul(t2));
 			Vector3 dist2 = p0.sub(result2);
 			
-			return dist1.length() > dist2.length() ? result2 : result1;
+			return dist1.length() > dist2.length() ? t2 : t1;// result2 : result1;
 		}	
 	}
 }

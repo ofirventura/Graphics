@@ -56,7 +56,7 @@ public class Vector3
 		result.setY((this.z * v.getX()) - (this.x * v.getZ()));
 		result.setZ((this.x * v.getY()) - (this.y * v.getX()));
 		
-		return null;
+		return result;
 	}
 
 	public double length() 

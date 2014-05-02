@@ -348,6 +348,7 @@ public class RayTracer
 		scene.setLights(lights);
 		scene.setMaterials(materials);
 		scene.setSurfaces(surfaces);
+		scene.getCamera().calcTransMatrix();
 		
 		System.out.println("Finished parsing scene file " + sceneFileName);
 
@@ -373,15 +374,15 @@ public class RayTracer
 		//
 		// Each of the red, green and blue components should be a byte, i.e.
 		// 0-255
-
+		
 		for (int i = 0; i < imageHeight; i++)
 		{
 			for (int j = 0; j < imageWidth; j++)
 			{
-				Color col = scene.getColorForPixel(i, j);
-				rgbData[(j*this.imageWidth + i)*3] 	   = (byte)col.getR();
-				rgbData[(j*this.imageWidth + i)*3 + 1] = (byte)col.getG();
-				rgbData[(j*this.imageWidth + i)*3 + 2] = (byte)col.getB();
+				Color col = scene.getColorForPixel(i, j, imageWidth);
+				rgbData[(j*imageWidth + i)*3] 	   = (byte)col.getR();
+				rgbData[(j*imageWidth + i)*3 + 1] = (byte)col.getG();
+				rgbData[(j*imageWidth + i)*3 + 2] = (byte)col.getB();
 			}
 		}
 		
@@ -394,7 +395,7 @@ public class RayTracer
 		System.out.println("Finished rendering scene in " + renderTime.toString() + " milliseconds.");
 
 		// This is already implemented, and should work without adding any code.
-		saveImage(this.imageWidth, rgbData, outputFileName);
+		saveImage(imageWidth, rgbData, outputFileName);
 
 		System.out.println("Saved file " + outputFileName);
 

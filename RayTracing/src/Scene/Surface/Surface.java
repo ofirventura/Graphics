@@ -1,7 +1,4 @@
 package Scene.Surface;
-
-import java.util.List;
-
 import RayTracing.Ray;
 import RayTracing.Vector3;
 
@@ -21,6 +18,6 @@ public abstract class Surface
 		this.material = material;
 	}
 	
-	public abstract double intersect(Ray ray);
+	public abstract Double intersect(Ray ray);
 	public abstract Vector3 getNormal(Vector3 p);
 }
