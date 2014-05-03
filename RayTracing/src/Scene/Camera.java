@@ -25,7 +25,7 @@ public class Camera
 	private Vector3 towards;
 	private Vector3 right;
 	private Vector3 up;
-	private Matrix4 m;
+	//private Matrix4 m;
 	
 	private Vector3 p1;
 	
@@ -81,30 +81,30 @@ public class Camera
 	
 	public void calcTransMatrix()
 	{
-		m = new Matrix4();
+		//m = new Matrix4();
 		
 		towards = lookAtPosition.sub(position);
 		towards.normal();
 		
-		right = towards.crossProduct(upVector);
+		right = towards.crossProduct(upVector).mul(-1);
 		right.normal();
 		
-		up = towards.crossProduct(right);//.mul(-1));
+		up = towards.crossProduct(right).mul(-1);
 		up.normal();
 		
-		m.setRow(0, towards.getX(), towards.getY(), towards.getZ(), (double)0.0);
-		m.setRow(1, right.getX(), right.getY(), right.getZ(), (double)0.0);
-		m.setRow(2, up.getX(), up.getY(), up.getZ(), (double)0.0);
-		m.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
+		//m.setRow(0, towards.getX(), towards.getY(), towards.getZ(), (double)0.0);
+		//m.setRow(1, right.getX(), right.getY(), right.getZ(), (double)0.0);
+		//m.setRow(2, up.getX(), up.getY(), up.getZ(), (double)0.0);
+		//m.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
 		
-		Matrix4 newMat = new Matrix4();
+		//Matrix4 newMat = new Matrix4();
 		
-		newMat.setRow(0, (double)1.0, (double)0.0, (double)0.0, (-1) * (double)position.getX());
-		newMat.setRow(1, (double)0.0, (double)1.0, (double)0.0, (-1) * (double)position.getY());
-		newMat.setRow(2, (double)0.0, (double)0.0, (double)1.0, (-1) * (double)position.getZ());
-		newMat.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
+		//newMat.setRow(0, (double)1.0, (double)0.0, (double)0.0, (-1) * (double)position.getX());
+		//newMat.setRow(1, (double)0.0, (double)1.0, (double)0.0, (-1) * (double)position.getY());
+		//newMat.setRow(2, (double)0.0, (double)0.0, (double)1.0, (-1) * (double)position.getZ());
+		//newMat.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
 		
-		m.setMatrix(m.multiply(newMat).getMatrix());
+		//m.setMatrix(m.multiply(newMat).getMatrix());
 		
 		computeP1();
 	}
@@ -122,7 +122,7 @@ public class Camera
 	public double getTeta()
 	{
 		
-		return Math.tan((screenWidth/2) / screenDist);
+		return Math.atan((screenWidth/2) / screenDist);
 	}
 	
 	public Vector3 getP1()
@@ -130,10 +130,10 @@ public class Camera
 		return p1;
 	}
 	
-	public Matrix4 getM()
-	{
-		return m;
-	}
+	//public Matrix4 getM()
+	//{
+	//	return m;
+	//}
 	
 	public Vector3 getTowards()
 	{
