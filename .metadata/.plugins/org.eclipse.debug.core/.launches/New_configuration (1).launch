@@ -8,6 +8,6 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="RayTracing.RayTracer"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="scenes/Part1_Ellipsoids.txt Part1_EllipsoidsTest.png"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="scenes/Part1_Pool.txt Part1_PoolTest.png"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="RayTracing"/>
 </launchConfiguration>
