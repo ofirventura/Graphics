@@ -81,30 +81,30 @@ public class Camera
 	
 	public void calcTransMatrix()
 	{
-		m = new Matrix4();
+		this.m = new Matrix4();
 		
-		towards = lookAtPosition.sub(position);
-		towards.normal();
+		this.towards = lookAtPosition.sub(position);
+		this.towards.normal();
 		
-		right = towards.crossProduct(upVector);
-		right.normal();
+		this.right = this.towards.crossProduct(this.upVector);
+		this.right.normal();
 		
-		up = towards.crossProduct(right);//.mul(-1));
-		up.normal();
+		this.up = this.towards.crossProduct(this.right.mul(-1));
+		this.up.normal();
 		
-		m.setRow(0, towards.getX(), towards.getY(), towards.getZ(), (double)0.0);
-		m.setRow(1, right.getX(), right.getY(), right.getZ(), (double)0.0);
-		m.setRow(2, up.getX(), up.getY(), up.getZ(), (double)0.0);
-		m.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
+		this.m.setRow(0, this.towards.getX(), this.towards.getY(), this.towards.getZ(), (double)0.0);
+		this.m.setRow(1, this.right.getX(), this.right.getY(), this.right.getZ(), (double)0.0);
+		this.m.setRow(2, this.up.getX(), this.up.getY(), this.up.getZ(), (double)0.0);
+		this.m.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
 		
 		Matrix4 newMat = new Matrix4();
 		
-		newMat.setRow(0, (double)1.0, (double)0.0, (double)0.0, (-1) * (double)position.getX());
-		newMat.setRow(1, (double)0.0, (double)1.0, (double)0.0, (-1) * (double)position.getY());
-		newMat.setRow(2, (double)0.0, (double)0.0, (double)1.0, (-1) * (double)position.getZ());
+		newMat.setRow(0, (double)1.0, (double)0.0, (double)0.0, (-1) * (double)this.position.getX());
+		newMat.setRow(1, (double)0.0, (double)1.0, (double)0.0, (-1) * (double)this.position.getY());
+		newMat.setRow(2, (double)0.0, (double)0.0, (double)1.0, (-1) * (double)this.position.getZ());
 		newMat.setRow(3, (double)0.0, (double)0.0, (double)0.0, (double)1.0);
 		
-		m.setMatrix(m.multiply(newMat).getMatrix());
+		this.m.setMatrix(this.m.multiply(newMat).getMatrix());
 		
 		computeP1();
 	}
@@ -112,49 +112,49 @@ public class Camera
 	public void computeP1()
 	{
 		double teta = getTeta();
-		Vector3 u = right.mul(Math.tan(teta));
-		Vector3 w = up.mul(Math.tan(teta));
-		Vector3 v = towards.sub(u.add(w));
-		p1 = position.add(v.mul(screenDist));
+		Vector3 u = this.right.mul(Math.tan(teta));
+		Vector3 w = this.up.mul(Math.tan(teta));
+		Vector3 v = this.towards.sub(u.sub(w));
+		this.p1 = this.position.add(v.mul(this.screenDist));
 				
 	}
 
 	public double getTeta()
 	{
 		
-		return Math.tan((screenWidth/2) / screenDist);
+		return Math.tan((this.screenWidth/2) / this.screenDist);
 	}
 	
 	public Vector3 getP1()
 	{
-		return p1;
+		return this.p1;
 	}
 	
 	public Matrix4 getM()
 	{
-		return m;
+		return this.m;
 	}
 	
 	public Vector3 getTowards()
 	{
-		return towards;
+		return this.towards;
 	}
 	
 	public Vector3 getRight()
 	{
-		return right;
+		return this.right;
 	}
 	
 	public Vector3 getUp()
 	{
-		return up;
+		return this.up;
 	}
 	
 	public Ray createRay(int row, int col, int imageWidth)
 	{
 		
-		Vector3 v = right.mul((row + 0.5)/imageWidth  * 2 * screenDist * Math.tan(getTeta()));
-		Vector3 u = up.mul((col + 0.5)/imageWidth * 2 * screenDist * Math.tan(getTeta()));
+		Vector3 v = right.mul((row/imageWidth + 0.5) * 2 * screenDist * Math.tan(getTeta()));
+		Vector3 u = up.mul((row/imageWidth + 0.5) * 2 * screenDist * Math.tan(getTeta()));
 		Vector3 p = p1.add(v.add(u));
 		
 		Vector3 V = p.sub(position);

@@ -131,10 +131,7 @@ public class Scene
 				minSurface = entry.getKey();
 			}
 		}
-		System.out.println(minDist);
-		if (minSurface.toString().equals("Sphere")){
-			System.out.println(minSurface);
-		}
+	
 		color = getPixelColor(row, col, minSurface, minDist, ray);
 		
 		return color.getColorInByte();
@@ -154,8 +151,8 @@ public class Scene
 		Vector3 normal = surface.getNormal(point); 
 		Material material = this.materials.get(surface.getMaterial());
 		
-		return illuminati(normal, point, material, ray);   //this gets the color with all the light, should first test without it
-		//return material.getDiffuse();
+		//return illuminati(normal, point, material, ray);   //this gets the color with all the light, should first test without it
+		return material.getDiffuse();
 	}
 	
 	private Color illuminati(Vector3 normal, Vector3 point, Material material, Ray ray)
