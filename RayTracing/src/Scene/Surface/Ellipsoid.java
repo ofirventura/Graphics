@@ -74,7 +74,7 @@ public class Ellipsoid extends Surface
 		// no intersection
 		if (delta < 0 )
 		{
-			System.out.println(delta);
+			//System.out.println(delta);
 			return Double.POSITIVE_INFINITY;
 		}
 		// one point of intersection

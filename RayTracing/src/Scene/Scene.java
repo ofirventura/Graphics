@@ -131,10 +131,10 @@ public class Scene
 				minSurface = entry.getKey();
 			}
 		}
-		System.out.println(minDist);
-		if (minSurface.toString().equals("Sphere")){
-			System.out.println(minSurface);
-		}
+		//System.out.println(minDist);
+		//if (minSurface.toString().equals("Sphere")){
+			//System.out.println(minSurface);
+		//}
 		color = getPixelColor(row, col, minSurface, minDist, ray);
 		
 		return color.getColorInByte();

@@ -1,6 +1,5 @@
 package RayTracing;
 
-
 import java.awt.Transparency;
 import java.awt.color.*;
 import java.awt.image.*;
@@ -25,7 +24,7 @@ public class RayTracer
 	public int imageWidth;
 	public int imageHeight;
 	public Scene scene;
-	
+
 	/**
 	 * Runs the ray tracer. Takes scene file, output image file and image size
 	 * as input.
@@ -55,12 +54,42 @@ public class RayTracer
 				tracer.imageHeight = Integer.parseInt(args[3]);
 			}
 
+			/////////////////////////////////////////////////
+			// for testing - comment out before submitting //
+			/////////////////////////////////////////////////
+			String[] inputFiles = { "Part1_Ellipsoids.txt",
+									"Part1_ManySpheres_Narrow.txt",
+									"Part1_ManySpheres_Normal.txt",
+									"Part1_ManySpheres_Wide.txt",
+									"Part1_Pool.txt",
+									"Part1_Room.txt" };
+			
+			for (int i = 0; i < inputFiles.length; i++)
+			{
+				String input = "scenes/" + inputFiles[i];
+				String output = "output/output_" + inputFiles[i].substring(0, inputFiles[i].length()-3) + "png";
+				tracer.parseScene(input);
+				tracer.renderScene(output);
+			}
+			/////////////////////////////////////////////////
+			// 			end of part for testing		 	   //
+			/////////////////////////////////////////////////
+
+			
+			//////////////////////////////////////////////////
+			// for submitting - uncomment before submitting //
+			//////////////////////////////////////////////////
 			// Parse scene file:
 			tracer.parseScene(sceneFileName);
 
 			// Render scene:
 			tracer.renderScene(outputFileName);
 
+			//////////////////////////////////////////////////
+			// 			end of part for submitting 			//
+			//////////////////////////////////////////////////
+
+			
 			// } catch (IOException e) {
 			// System.out.println(e.getMessage());
 		}
@@ -92,7 +121,7 @@ public class RayTracer
 		List<Surface> surfaces = new ArrayList<Surface>();
 		List<Light> lights = new ArrayList<Light>();
 		scene = new Scene();
-		
+
 		while ((line = r.readLine()) != null)
 		{
 			line = line.trim();
@@ -108,7 +137,6 @@ public class RayTracer
 				// Split according to white space characters:
 				String[] params = line.substring(3).trim().toLowerCase().split("\\s+");
 
-				
 				if (code.equals("cam"))
 				{
 					/*
@@ -116,147 +144,129 @@ public class RayTracer
 					 * file) params[0,1,2] = position (x, y, z) of the camera
 					 * params[3,4,5] = look-at position (x, y, z) of the camera
 					 * params[6,7,8] = up vector (x, y, z) of the camera
-					 * params[9] = screen distance from camera 
-					 * params[10] = screen width from camera
+					 * params[9] = screen distance from camera params[10] =
+					 * screen width from camera
 					 */
 
 					if (params.length != 11)
 					{
-						throw new RayTracerException(
-								"Incomapible number of parameters for camera.");
+						throw new RayTracerException("Incomapible number of parameters for camera.");
 
 					}
-					
+
 					Camera camera = new Camera();
-					camera.setPosition(new Vector3(Double.parseDouble(params[0]), 
-												  Double.parseDouble(params[1]), 
-												  Double.parseDouble(params[2])));
-					camera.setLookAtPosition(new Vector3(Double.parseDouble(params[3]), 
-														Double.parseDouble(params[4]), 
-														Double.parseDouble(params[5])));
-					camera.setUpVector(new Vector3(Double.parseDouble(params[6]), 
-												  Double.parseDouble(params[7]), 
-												  Double.parseDouble(params[8])));
+					camera.setPosition(new Vector3(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double
+							.parseDouble(params[2])));
+					camera.setLookAtPosition(new Vector3(Double.parseDouble(params[3]), Double.parseDouble(params[4]),
+							Double.parseDouble(params[5])));
+					camera.setUpVector(new Vector3(Double.parseDouble(params[6]), Double.parseDouble(params[7]), Double
+							.parseDouble(params[8])));
 					camera.setScreenDist(Double.parseDouble(params[9]));
 					camera.setScreenWidth(Double.parseDouble(params[10]));
 
 					scene.setCamera(camera);
-					
+
 					System.out.println(String.format("Parsed camera parameters (line %d)", lineNum));
 				}
 				else if (code.equals("set"))
 				{
 					/*
-					 * "set" = general settings for the scene (once per scene file) 
-				 	 * 		params[0,1,2] = background color (r, g, b) 
-				  	 * 		params[3] = root number of shadow rays (N^2 rays will be shot) 
-				  	 * 		params[4] = maximum number of recursions 
+					 * "set" = general settings for the scene (once per scene
+					 * file) params[0,1,2] = background color (r, g, b)
+					 * params[3] = root number of shadow rays (N^2 rays will be
+					 * shot) params[4] = maximum number of recursions
 					 */
-					
+
 					if (params.length != 5)
 					{
-						throw new RayTracerException(
-								"Incomapible number of parameters for camera.");
+						throw new RayTracerException("Incomapible number of parameters for camera.");
 
 					}
-					
-					scene.setBackground(new Color(Float.parseFloat(params[0]),
-												  Float.parseFloat(params[1]),
-												  Float.parseFloat(params[2])));
+
+					scene.setBackground(new Color(Float.parseFloat(params[0]), Float.parseFloat(params[1]), Float
+							.parseFloat(params[2])));
 					scene.setNumOfShadowRays(Integer.parseInt(params[3]));
 					scene.setMaxNumOfRecursions(Integer.parseInt(params[4]));
-					
+
 					System.out.println(String.format("Parsed general settings (line %d)", lineNum));
 				}
 				else if (code.equals("mtl"))
 				{
 					/*
-					 * "mtl" = defines a new material 
-				 	 * 		params[0,1,2] = diffuse color (r, g, b) 
-				  	 * 		params[3,4,5] = specular color (r, g, b) 
-				  	 * 		params[6,7,8] = reflection color (r, g, b) 
-				  	 * 		params[9] = phong specularity coefficient (shininess) 
-				  	 * 		params[10] = transparency value between 0 and 1 
+					 * "mtl" = defines a new material params[0,1,2] = diffuse
+					 * color (r, g, b) params[3,4,5] = specular color (r, g, b)
+					 * params[6,7,8] = reflection color (r, g, b) params[9] =
+					 * phong specularity coefficient (shininess) params[10] =
+					 * transparency value between 0 and 1
 					 */
-					
+
 					if (params.length != 11)
 					{
-						throw new RayTracerException(
-								"Incomapible number of parameters for camera.");
+						throw new RayTracerException("Incomapible number of parameters for camera.");
 
 					}
-					
+
 					Material material = new Material();
-					
-					material.setDiffuse(new Color(Float.parseFloat(params[0]), 
-												  Float.parseFloat(params[1]), 
-												  Float.parseFloat(params[2])));
-					material.setSpecular(new Color(Float.parseFloat(params[3]), 
-												   Float.parseFloat(params[4]), 
-												   Float.parseFloat(params[5])));
-					material.setReflection(new Color(Float.parseFloat(params[6]), 
-													 Float.parseFloat(params[7]), 
-													 Float.parseFloat(params[8])));
+
+					material.setDiffuse(new Color(Float.parseFloat(params[0]), Float.parseFloat(params[1]), Float
+							.parseFloat(params[2])));
+					material.setSpecular(new Color(Float.parseFloat(params[3]), Float.parseFloat(params[4]), Float
+							.parseFloat(params[5])));
+					material.setReflection(new Color(Float.parseFloat(params[6]), Float.parseFloat(params[7]), Float
+							.parseFloat(params[8])));
 					material.setPhong(Double.parseDouble(params[9]));
 					material.setTransparency(Double.parseDouble(params[10]));
 
 					materials.add(material);
-					
+
 					System.out.println(String.format("Parsed material (line %d)", lineNum));
 				}
 				else if (code.equals("sph"))
 				{
 
 					/*
-					 * "sph" = defines a new sphere 
-				 	 * 		params[0,1,2] = position of the sphere center (x, y, z) 
-				  	 * 		params[3] = radius 
-				  	 * 		params[4] = material index (integer). each defined material gets an 
-				  	 * 		automatic material index starting from 1, 2 and so on
+					 * "sph" = defines a new sphere params[0,1,2] = position of
+					 * the sphere center (x, y, z) params[3] = radius params[4]
+					 * = material index (integer). each defined material gets an
+					 * automatic material index starting from 1, 2 and so on
 					 */
-					
+
 					if (params.length != 5)
 					{
-						throw new RayTracerException(
-								"Incomapible number of parameters for camera.");
+						throw new RayTracerException("Incomapible number of parameters for camera.");
 
 					}
 					Sphere sphere = new Sphere();
-					
-					sphere.setCenter(new Vector3(Double.parseDouble(params[0]), 
-												Double.parseDouble(params[1]), 
-												Double.parseDouble(params[2])));
+
+					sphere.setCenter(new Vector3(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double
+							.parseDouble(params[2])));
 					sphere.setRadius(Double.parseDouble(params[3]));
 					sphere.setMaterial(Integer.parseInt(params[4]) - 1);
-					
+
 					surfaces.add(sphere);
-					
+
 					System.out.println(String.format("Parsed sphere (line %d)", lineNum));
 				}
 				else if (code.equals("pln"))
 				{
 					/*
-					 * "pln" = defines a new plane 
-				 	 * 		params[0,1,2] = normal (x, y, z) 
-				 	 * 		params[3] = offset 
-				  	 * 		params[4] = material index
+					 * "pln" = defines a new plane params[0,1,2] = normal (x, y,
+					 * z) params[3] = offset params[4] = material index
 					 */
-					
+
 					if (params.length != 5)
 					{
-						throw new RayTracerException(
-								"Incomapible number of parameters for camera.");
+						throw new RayTracerException("Incomapible number of parameters for camera.");
 
 					}
-					
+
 					Plane plane = new Plane();
-					
-					plane.setNormal(new Vector3(Double.parseDouble(params[0]), 
-											   Double.parseDouble(params[1]), 
-											   Double.parseDouble(params[2])));
+
+					plane.setNormal(new Vector3(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double
+							.parseDouble(params[2])));
 					plane.setOffset(Double.parseDouble(params[3]));
 					plane.setMaterial(Integer.parseInt(params[4]) - 1);
-					
+
 					surfaces.add(plane);
 
 					System.out.println(String.format("Parsed plane (line %d)", lineNum));
@@ -264,80 +274,69 @@ public class RayTracer
 				else if (code.equals("elp"))
 				{
 					/*
-					 * "elp" = defines a new ellipsoid 
-				 	 * 		params[0,1,2] = position of the ellipsoid center (x, y, z) 
-				  	 * 		params[3,4,5] = first row of transformation matrix 
-				  	 * 		params[6,7,8] = second row of transformation matrix 
-				  	 * 		params[9,10,11] = third row of transformation matrix 
-				  	 * 		params[12] = material index 
+					 * "elp" = defines a new ellipsoid params[0,1,2] = position
+					 * of the ellipsoid center (x, y, z) params[3,4,5] = first
+					 * row of transformation matrix params[6,7,8] = second row
+					 * of transformation matrix params[9,10,11] = third row of
+					 * transformation matrix params[12] = material index
 					 */
 
 					if (params.length != 13)
 					{
-						throw new RayTracerException(
-								"Incomapible number of parameters for camera.");
+						throw new RayTracerException("Incomapible number of parameters for camera.");
 
 					}
-					
+
 					Ellipsoid ellipse = new Ellipsoid();
-					
-					ellipse.setCenter(new Vector3(Double.parseDouble(params[0]), 
-												 Double.parseDouble(params[1]), 
-												 Double.parseDouble(params[2])));
-					ellipse.getMatrix().setRow(0, Double.parseDouble(params[3]), 
-							 					  Double.parseDouble(params[4]), 
-							 					  Double.parseDouble(params[5]));
-					ellipse.getMatrix().setRow(1, Double.parseDouble(params[6]), 
-		 					  					  Double.parseDouble(params[7]), 
-		 					  					  Double.parseDouble(params[8]));
-					ellipse.getMatrix().setRow(2, Double.parseDouble(params[9]), 
-												  Double.parseDouble(params[10]), 
-												  Double.parseDouble(params[11]));
+
+					ellipse.setCenter(new Vector3(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double
+							.parseDouble(params[2])));
+					ellipse.getMatrix().setRow(0, Double.parseDouble(params[3]), Double.parseDouble(params[4]),
+							Double.parseDouble(params[5]));
+					ellipse.getMatrix().setRow(1, Double.parseDouble(params[6]), Double.parseDouble(params[7]),
+							Double.parseDouble(params[8]));
+					ellipse.getMatrix().setRow(2, Double.parseDouble(params[9]), Double.parseDouble(params[10]),
+							Double.parseDouble(params[11]));
 					ellipse.setMaterial(Integer.parseInt(params[12]) - 1);
-					
+
 					surfaces.add(ellipse);
-					
+
 					System.out.println(String.format("Parsed ellipsoid (line %d)", lineNum));
 				}
 				else if (code.equals("lgt"))
 				{
 					/*
-					 * "lgt" = defines a new light 
-				 	 * 		params[0,1,2] = position of the light (x, y, z) 
-				  	 * 		params[3,4,5] = light color (r, g, b) 
-				  	 * 		params[6] = specular intensity 
-				  	 * 		params[7] = shadow intensity 
-				  	 * 		params[8] = light width / radius (used for soft shadows)
+					 * "lgt" = defines a new light params[0,1,2] = position of
+					 * the light (x, y, z) params[3,4,5] = light color (r, g, b)
+					 * params[6] = specular intensity params[7] = shadow
+					 * intensity params[8] = light width / radius (used for soft
+					 * shadows)
 					 */
 
 					if (params.length != 9)
 					{
-						throw new RayTracerException(
-								"Incomapible number of parameters for camera.");
+						throw new RayTracerException("Incomapible number of parameters for camera.");
 
 					}
 
 					Light light = new Light();
-					
-					light.setPosition(new Vector3(Double.parseDouble(params[0]), 
-												 Double.parseDouble(params[1]), 
-												 Double.parseDouble(params[2])));
-					light.setColor(new Color(Float.parseFloat(params[3]),
-											 Float.parseFloat(params[4]),
-											 Float.parseFloat(params[5])));
+
+					light.setPosition(new Vector3(Double.parseDouble(params[0]), Double.parseDouble(params[1]), Double
+							.parseDouble(params[2])));
+					light.setColor(new Color(Float.parseFloat(params[3]), Float.parseFloat(params[4]), Float
+							.parseFloat(params[5])));
 					light.setSpecularIntensity(Double.parseDouble(params[6]));
 					light.setShadowIntensity(Double.parseDouble(params[7]));
 					light.setRadius(Double.parseDouble(params[8]));
-					
+
 					lights.add(light);
-					
+
 					System.out.println(String.format("Parsed light (line %d)", lineNum));
 				}
 				else
 				{
 					System.out.println(String.format("ERROR: Did not recognize object: %s (line %d)", code, lineNum));
 				}
-				
 
 			}
 		}
@@ -349,7 +348,7 @@ public class RayTracer
 		scene.setMaterials(materials);
 		scene.setSurfaces(surfaces);
 		scene.getCamera().calcTransMatrix();
-		
+
 		System.out.println("Finished parsing scene file " + sceneFileName);
 
 	}
@@ -374,18 +373,18 @@ public class RayTracer
 		//
 		// Each of the red, green and blue components should be a byte, i.e.
 		// 0-255
-		
+
 		for (int i = 0; i < imageHeight; i++)
 		{
 			for (int j = 0; j < imageWidth; j++)
 			{
 				Color col = scene.getColorForPixel(i, j, imageWidth);
-				rgbData[(j*imageWidth + i)*3] 	   = (byte)col.getR();
-				rgbData[(j*imageWidth + i)*3 + 1] = (byte)col.getG();
-				rgbData[(j*imageWidth + i)*3 + 2] = (byte)col.getB();
+				rgbData[(j * imageWidth + i) * 3] = (byte) col.getR();
+				rgbData[(j * imageWidth + i) * 3 + 1] = (byte) col.getG();
+				rgbData[(j * imageWidth + i) * 3 + 2] = (byte) col.getB();
 			}
 		}
-		
+
 		long endTime = System.currentTimeMillis();
 		Long renderTime = endTime - startTime;
 
