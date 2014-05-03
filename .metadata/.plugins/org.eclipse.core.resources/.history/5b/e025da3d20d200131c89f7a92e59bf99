@@ -71,10 +71,5 @@ public class Sphere extends Surface
     	result.normal();
         return result;
     }
-    
-    @Override
-    public String toString() {
-    	return "Sphere";
-    }
 		
 }

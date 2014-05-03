@@ -131,7 +131,6 @@ public class Scene
 				minSurface = entry.getKey();
 			}
 		}
-		System.out.println(minDist);
 		if (minSurface.toString().equals("Sphere")){
 			System.out.println(minSurface);
 		}

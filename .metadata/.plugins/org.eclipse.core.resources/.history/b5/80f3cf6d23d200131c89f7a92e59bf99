@@ -89,7 +89,7 @@ public class Camera
 		right = towards.crossProduct(upVector);
 		right.normal();
 		
-		up = towards.crossProduct(right);//.mul(-1));
+		up = towards.crossProduct(right.mul(-1));
 		up.normal();
 		
 		m.setRow(0, towards.getX(), towards.getY(), towards.getZ(), (double)0.0);

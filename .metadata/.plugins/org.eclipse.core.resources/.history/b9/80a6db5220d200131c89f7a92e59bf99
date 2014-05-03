@@ -55,5 +55,5 @@ public class Plane extends Surface
     @Override
     public String toString() {
     	return "Plane";
-    }
+	
 }

@@ -51,9 +51,5 @@ public class Plane extends Surface
     		return Double.POSITIVE_INFINITY;
         return t;
      }
-    
-    @Override
-    public String toString() {
-    	return "Plane";
-    }
+	
 }
