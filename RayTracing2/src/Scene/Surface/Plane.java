@@ -20,6 +20,7 @@ public class Plane extends Surface
 
 	public Vector3 getNormal(Vector3 p)
 	{
+		normal.normal();
 		return normal;
 	}
 	

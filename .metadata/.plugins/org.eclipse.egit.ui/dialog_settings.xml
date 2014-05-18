@@ -2,4 +2,7 @@
 <section name="Workbench">
 	<item value="C:\Users\ofir\workspace graphics\.git" key="GitSelectRepositoryPage.lastRepository"/>
 	<item value="0" key="org.eclipse.egit.ui.internal.clone.GitSelectWizardPageWizardSel"/>
+	<list key="RepositorySelectionPage.UsedUris">
+		<item value="file:///C:\Users\ofir\workspace graphics\RayTracing2"/>
+	</list>
 </section>

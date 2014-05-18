@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-
 import java.util.Map.Entry;
+import java.util.Stack;
 
 import RayTracing.Color;
 import RayTracing.Ray;
@@ -121,9 +121,16 @@ public class Scene
 	
 	public Color getColorForPixel(int row, int col, int imageWidth)
 	{
-		Color color = new Color();
-		
 		Ray ray = camera.createRay(row, col, imageWidth);
+		Stack<Surface> objectStack = new Stack<Surface>();
+
+		Vector3 pixelColor = trace(ray, 1, objectStack);
+		Color color = new Color(pixelColor.getX(), pixelColor.getY(), pixelColor.getZ());
+		return color.getColorInByte();
+	}
+
+	private Vector3 trace(Ray ray, int recursionDepth, Stack<Surface> stack) {
+		
 		HashMap<Surface, Double> distMap = new LinkedHashMap<Surface, Double>(); 
 		
 		for (Surface object : surfaces)
@@ -143,27 +150,78 @@ public class Scene
 			}
 		}
 		
-		color = getPixelColor(row, col, minSurface, minDist, ray);
-		
-		return color.getColorInByte();
-	}
-
-	private Color getPixelColor(int row, int col, Surface surface, double dist, Ray ray)
-	{
-		if (Double.isInfinite(dist) || surface == null)
+		if (Double.isInfinite(minDist) || minSurface == null)
 		{
 			// no intersection
-			return this.background;
+			return new Vector3(background.getR(), background.getG(), background.getB());
+		}
+		Vector3 v = ray.getV();
+		v.normal();
+		
+		Vector3 point = ray.getP0().add(v.mul(minDist));
+		Vector3 normal = minSurface.getNormal(point); 
+		Vector3 reflectionColor = new Vector3(0, 0, 0);
+		Vector3 transparentColor = new Vector3(0, 0, 0);
+		Material material = materials.get(minSurface.getMaterial());
+
+		
+		if (!stack.isEmpty() && stack.peek().equals(minSurface))
+		{
+			Ray newRay = new Ray(point.add(v.mul(0.00009)), v);
+			stack.pop();
+			return trace(newRay, recursionDepth, stack);
 		}
 		
-		Vector3 point = ray.getP0().add(ray.getV().mul(dist));
-		Vector3 normal = surface.getNormal(point); 
-		Material material = this.materials.get(surface.getMaterial());
+		// Lights
+		Vector3 color = illuminati(normal, point, material, ray);
 		
-		return illuminati(normal, point, material, ray);  
+		// Reflection
+		if (getMaxNumOfRecursions() >= recursionDepth && isObjReflective(minSurface))
+		{
+			double c1 = -1.0 * normal.dotProduct(v);
+			Vector3 Rl = v.add(normal.mul(2.0 * c1)); 
+			Rl.normal();
+			Ray newRay = new Ray(point.add(Rl.mul(0.001)), Rl);
+			reflectionColor =  trace(newRay, recursionDepth + 1, stack);
+		}
+		
+		// Transparency
+		if (material.getTransparency() > 0.0)
+		{
+			stack.push(minSurface);
+			Ray newRay = new Ray(point.add(v.mul(0.00009)), v);
+			transparentColor = trace(newRay, recursionDepth, stack);
+			if (!stack.isEmpty())
+				stack.pop();
+		}
+		
+		return outputColor(color, reflectionColor, transparentColor, material);
+		
+		
 	}
 	
-	private Color illuminati(Vector3 normal, Vector3 point, Material material, Ray ray)
+	
+	/*
+	 * output color = (background color) * transparency + (diffuse + specular) * (1 - transparency) + (reflection color)
+	 * */
+	private Vector3 outputColor(Vector3 color, Vector3 reflectionColor, Vector3 transparentColor, Material material) {
+		Color reflection = material.getReflection();
+		Vector3 reflectionMulOrigin = new Vector3(reflection.getR()*reflectionColor.getX(), 
+				reflection.getG()*reflectionColor.getY(),
+				reflection.getB()*reflectionColor.getZ()); 
+		double transparency = material.getTransparency();
+		Vector3 output = transparentColor.mul(transparency).add(color.mul(1 - transparency)).add(reflectionMulOrigin);
+		return output;
+	}
+
+	private boolean isObjReflective(Surface surface) {
+		int index = surface.getMaterial();
+		Color refCol = materials.get(index).getReflection();
+		if (refCol.getR() > 0 || refCol.getG() > 0 || refCol.getB() > 0) return true;
+		else return false;
+	}
+
+	private Vector3 illuminati(Vector3 normal, Vector3 point, Material material, Ray ray)
 	{
 		Vector3 pixelColor = new Vector3(0,0,0);
 		
@@ -187,18 +245,26 @@ public class Scene
 			
 			//calc specular
 			
-			Vector3 r = normal.mul(2 * l.dotProduct(normal)).sub(l);
+			Vector3 r = normal.mul(2.0 * l.dotProduct(normal)).sub(l);
 			r.normal();
 			
-			double rv = Math.pow(r.dotProduct(ray.getV().mul(-1)), material.getPhong());
+			double l_dot_r = r.dotProduct(ray.getV().mul(-1.0));
 			
-			red = material.getSpecular().getR() * light.getColor().getR() * light.getSpecularIntensity() * rv;
-			green = material.getSpecular().getG() * light.getColor().getG() * light.getSpecularIntensity() * rv;
-			blue = material.getSpecular().getB() * light.getColor().getB() * light.getSpecularIntensity() * rv;
-			pixelColor = pixelColor.add(new Vector3(red,blue,green));
-			
+			if (l_dot_r >= 0.0) {
+				
+				if (l_dot_r > 1.0)
+					l_dot_r = 1.0;
+				
+				double rv = Math.pow(l_dot_r, material.getPhong());
+				
+				red = material.getSpecular().getR() * light.getColor().getR() * light.getSpecularIntensity() * rv;
+				green = material.getSpecular().getG() * light.getColor().getG() * light.getSpecularIntensity() * rv;
+				blue = material.getSpecular().getB() * light.getColor().getB() * light.getSpecularIntensity() * rv;
+				pixelColor = pixelColor.add(new Vector3(red,green,blue));
+
+			}
 		}
 		
-		return new Color(pixelColor.getX(), pixelColor.getY(), pixelColor.getZ());
+		return pixelColor;
 	}
 }
