@@ -53,43 +53,45 @@ public class RayTracer
 				tracer.imageWidth = Integer.parseInt(args[2]);
 				tracer.imageHeight = Integer.parseInt(args[3]);
 			}
-/*
-			/////////////////////////////////////////////////
+
+			// ///////////////////////////////////////////////
 			// for testing - comment out before submitting //
-			/////////////////////////////////////////////////
-			String[] inputFiles = { "Part1_Ellipsoids.txt",
-									"Part1_ManySpheres_Narrow.txt",
-									"Part1_ManySpheres_Normal.txt",
-									"Part1_ManySpheres_Wide.txt",
-									"Part1_Pool.txt",
-									"Part1_Room.txt" };
-			
+			// ///////////////////////////////////////////////
+			String[] inputFiles = { "Ellipsoids.txt", "ManySpheres_Narrow.txt", "ManySpheres_Normal.txt",
+					"ManySpheres_Wide.txt", "Pool.txt", "Room.txt", "Bubbles.txt", "EllipsoidsCompare.txt",
+					"MirrorBalls.txt", "SciFi.txt", "Spheres.txt", "SpheresCompare.txt", "Transparency.txt" };
+			/*String[] inputFiles = { "Part1_Ellipsoids.txt",
+					"Part1_ManySpheres_Narrow.txt",
+					"Part1_ManySpheres_Normal.txt",
+					"Part1_ManySpheres_Wide.txt",
+					"Part1_Pool.txt",
+					"Part1_Room.txt" };
+*/
+
 			for (int i = 0; i < inputFiles.length; i++)
 			{
 				String input = "scenes/" + inputFiles[i];
-				String output = "output/output_" + inputFiles[i].substring(0, inputFiles[i].length()-3) + "png";
+				String output = "output/output_" + inputFiles[i].substring(0, inputFiles[i].length() - 3) + "png";
 				tracer.parseScene(input);
 				tracer.renderScene(output);
 			}
-			/////////////////////////////////////////////////
-			// 			end of part for testing		 	   //
-			/////////////////////////////////////////////////
-*/
-			
-			//////////////////////////////////////////////////
+			// ///////////////////////////////////////////////
+			// end of part for testing //
+			// ///////////////////////////////////////////////
+/*
+			// ////////////////////////////////////////////////
 			// for submitting - uncomment before submitting //
-			//////////////////////////////////////////////////
+			// ////////////////////////////////////////////////
 			// Parse scene file:
 			tracer.parseScene(sceneFileName);
 
 			// Render scene:
 			tracer.renderScene(outputFileName);
 
-			//////////////////////////////////////////////////
-			// 			end of part for submitting 			//
-			//////////////////////////////////////////////////
-
-			
+			// ////////////////////////////////////////////////
+			// end of part for submitting //
+			// ////////////////////////////////////////////////
+*/
 			// } catch (IOException e) {
 			// System.out.println(e.getMessage());
 		}
@@ -162,9 +164,8 @@ public class RayTracer
 					camera.setUpVector(new Vector3(Double.parseDouble(params[6]), Double.parseDouble(params[7]), Double
 							.parseDouble(params[8])));
 					camera.setScreenDist(Double.parseDouble(params[9]));
-					camera.setScreenWidth(Double.parseDouble(params[10]));		
-					
-					
+					camera.setScreenWidth(Double.parseDouble(params[10]));
+
 					scene.setCamera(camera);
 
 					System.out.println(String.format("Parsed camera parameters (line %d)", lineNum));
@@ -344,7 +345,7 @@ public class RayTracer
 
 		// It is recommended that you check here that the scene is valid,
 		// for example camera settings and all necessary materials were defined.
-		
+
 		scene.setLights(lights);
 		scene.setMaterials(materials);
 		scene.setSurfaces(surfaces);
@@ -353,9 +354,9 @@ public class RayTracer
 		{
 			throw new RayTracerException("Invalid scene.");
 		}
-		
+
 		scene.getCamera().calcTransMatrix();
-		
+
 		System.out.println("Finished parsing scene file " + sceneFileName);
 
 	}

@@ -3,6 +3,7 @@ package Scene;
 
 
 import RayTracing.Color;
+import RayTracing.Ray;
 import RayTracing.Vector3;
 
 
@@ -72,5 +73,12 @@ public class Light
 	public void setRadius(double radius)
 	{
 		this.radius = radius;
+	}
+	
+	public Ray createRay(Vector3 point, int numOfShadowRays, int i, int j)
+	{
+		Vector3 V = this.position.sub(point);
+		V.normal();
+		return new Ray(point.add(V.mul(0.001)), V);
 	}
 }

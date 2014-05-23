@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-
 import java.util.Map.Entry;
 
 import RayTracing.Color;
@@ -183,7 +182,7 @@ public class Scene
 			double red = material.getDiffuse().getR() * light.getColor().getR() * nl; 
 			double green = material.getDiffuse().getG() * light.getColor().getG() * nl;
 			double blue = material.getDiffuse().getB() * light.getColor().getB() * nl;
-			pixelColor = pixelColor.add(new Vector3(red, green, blue));
+			Vector3 tempPixelColor = new Vector3(red, green, blue);
 			
 			//calc specular
 			
@@ -195,10 +194,46 @@ public class Scene
 			red = material.getSpecular().getR() * light.getColor().getR() * light.getSpecularIntensity() * rv;
 			green = material.getSpecular().getG() * light.getColor().getG() * light.getSpecularIntensity() * rv;
 			blue = material.getSpecular().getB() * light.getColor().getB() * light.getSpecularIntensity() * rv;
-			pixelColor = pixelColor.add(new Vector3(red,blue,green));
+			tempPixelColor = tempPixelColor.add(new Vector3(red,blue,green));
+			
+			//calc shadow
+			
+			tempPixelColor = tempPixelColor.mul(1-light.getShadowIntensity()*(getLightAmount(light, point)));
+			
+			pixelColor = pixelColor.add(tempPixelColor);
 			
 		}
 		
 		return new Color(pixelColor.getX(), pixelColor.getY(), pixelColor.getZ());
+	}
+
+	private double getLightAmount(Light light, Vector3 point)
+	{
+		int count = 0;
+		boolean flag = false;
+		for (int i = 0; i < this.getNumOfShadowRays(); i++)
+		{
+			for (int j = 0; j < this.getNumOfShadowRays(); j++)
+			{
+				Ray ray = light.createRay(point, this.getNumOfShadowRays(), i, j);
+				
+				for (Surface surface : this.getSurfaces())
+				{
+					if (!Double.isInfinite(surface.intersect(ray)))
+					{
+						flag = true;
+						break;
+					}
+				}
+				
+				if (flag)
+				{
+					count++;
+				}
+			}
+			
+		}
+		
+		return (double)count/(this.getNumOfShadowRays()*this.getNumOfShadowRays());
 	}
 }
