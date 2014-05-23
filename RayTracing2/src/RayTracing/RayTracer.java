@@ -386,6 +386,9 @@ public class RayTracer
 		{
 			for (int j = 0; j < imageWidth; j++)
 			{
+				if (i == 279 && j == 217)
+					System.out.println();
+				
 				Color col = scene.getColorForPixel(i, j, imageWidth);
 				rgbData[(j * imageWidth + i) * 3] = (byte) col.getR();
 				rgbData[(j * imageWidth + i) * 3 + 1] = (byte) col.getG();

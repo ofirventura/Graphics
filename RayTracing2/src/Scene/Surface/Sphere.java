@@ -63,6 +63,13 @@ public class Sphere extends Surface
         Vector3 p2 = v.mul(t2).add(p0);
         Vector3 dist2 = p0.sub(p2);
         
+		if (t1 < 0 && t2 < 0)
+			return Double.POSITIVE_INFINITY;
+        if (t1 < 0)
+        	return t2;
+        if (t2 < 0)
+        	return t1;
+        
         return dist1.length() > dist2.length() ? t2 : t1; 
     }	
     
