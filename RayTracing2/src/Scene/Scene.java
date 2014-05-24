@@ -261,12 +261,15 @@ public class Scene
 				red = material.getSpecular().getR() * light.getColor().getR() * light.getSpecularIntensity() * rv;
 				green = material.getSpecular().getG() * light.getColor().getG() * light.getSpecularIntensity() * rv;
 				blue = material.getSpecular().getB() * light.getColor().getB() * light.getSpecularIntensity() * rv;
-				tempPixelColor = tempPixelColor.add(new Vector3(red,blue,green));
+				tempPixelColor = tempPixelColor.add(new Vector3(red,green,blue));
 
 			}
 			//calc shadow
 			
-			tempPixelColor = tempPixelColor.mul(1-light.getShadowIntensity()*(getLightAmount(light, point)));
+			if (light.getShadowIntensity() != 0)
+			{
+				tempPixelColor = tempPixelColor.mul(1-light.getShadowIntensity()*(getLightAmount(light, point)));	
+			}
 			
 			pixelColor = pixelColor.add(tempPixelColor);
 		}
@@ -278,18 +281,31 @@ public class Scene
 	{
 		int count = 0;
 		boolean flag = false;
+		
+		light.computeLightArea(point, this.getNumOfShadowRays());
+		
 		for (int i = 0; i < this.getNumOfShadowRays(); i++)
 		{
 			for (int j = 0; j < this.getNumOfShadowRays(); j++)
 			{
 				Ray ray = light.createRay(point, this.getNumOfShadowRays(), i, j);
 				
+				flag = false;
 				for (Surface surface : this.getSurfaces())
 				{
-					if (!Double.isInfinite(surface.intersect(ray)))
+					double t = surface.intersect(ray);
+					if (!Double.isInfinite(t))
 					{
-						flag = true;
-						break;
+						Vector3 intersectionPoint = ray.getP0().add(ray.getV().mul(t));
+						Vector3 distToLight = light.getPosition().sub(ray.getP0());
+						Vector3 distToIntersect = intersectionPoint.sub(ray.getP0());
+						
+						if (distToLight.length() >= distToIntersect.length())
+						{
+							flag = true;
+							break;
+						}
+						
 					}
 				}
 				

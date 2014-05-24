@@ -57,9 +57,20 @@ public class RayTracer
 			// ///////////////////////////////////////////////
 			// for testing - comment out before submitting //
 			// ///////////////////////////////////////////////
-			String[] inputFiles = { "Ellipsoids.txt", "ManySpheres_Narrow.txt", "ManySpheres_Normal.txt",
-					"ManySpheres_Wide.txt", "Pool.txt", "Room.txt", "Bubbles.txt", "EllipsoidsCompare.txt",
-					"MirrorBalls.txt", "SciFi.txt", "Spheres.txt", "SpheresCompare.txt", "Transparency.txt" };
+			String[] inputFiles = {"Room.txt", 
+					"MirrorBalls.txt", 
+									"SciFi.txt",
+									 
+									"Spheres.txt",
+									"Ellipsoids.txt", 
+									"ManySpheres_Narrow.txt", 
+									"ManySpheres_Normal.txt",
+									"ManySpheres_Wide.txt", 
+									"Pool.txt", 
+									"Bubbles.txt", 
+									"EllipsoidsCompare.txt",
+									"SpheresCompare.txt", 
+									"Transparency.txt" };
 			/*String[] inputFiles = { "Part1_Ellipsoids.txt",
 					"Part1_ManySpheres_Narrow.txt",
 					"Part1_ManySpheres_Normal.txt",
@@ -386,7 +397,7 @@ public class RayTracer
 		{
 			for (int j = 0; j < imageWidth; j++)
 			{
-				if (i == 279 && j == 217)
+				if (i == 141 && j == 489)
 					System.out.println();
 				
 				Color col = scene.getColorForPixel(i, j, imageWidth);
